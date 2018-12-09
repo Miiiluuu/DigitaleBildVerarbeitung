@@ -8,10 +8,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def make_scale(image):
     """ Skalieren der Zahlenwerte eines Arrays, sodass Grauwerte von 0...255
         umfasst werden.
-      
+  
         Parameter:
         ----------
         image: Array, Eingabewerte.

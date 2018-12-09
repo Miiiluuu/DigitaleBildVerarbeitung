@@ -115,7 +115,7 @@ def main():
 #         quelleD_separiert)
     # vor Anwendung Schwellwertverfahren (a priori) Glaettung mit 
     # Medianfilter zur Erzeugung zusammenhaengender Gebiete, Löcher in
-    # Flächen teilweise aufgefuelltz
+    # Flächen teilweise aufgefuellt
     szinti_filter_med = Aufgabe_3_3.filter_image(szinti)
     # Darstellung des Grauwerthistogramms
     Aufgabe_2_2.erstelle_grauwerthistogramm_abgeschnitten('Grauwerthistogramm',
