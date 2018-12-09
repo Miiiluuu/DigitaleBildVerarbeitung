@@ -8,6 +8,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def make_scale(image):
+    """ Skalieren der Zahlenwerte eines Arrays, sodass Grauwerte von 0...255
+        umfasst werden.
+      
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    # niedrigesten Wert auf Null setzen, damit gesamter Grauwertbereich
+    # verwendet wird
+    if np.min(image) != 0:
+        image -= np.min(image)
+    # hoechster Wert: 255 ≙ weiß
+    weiß = 255
+    hoechster_grauwert = np.max(image)
+    # Berechnung Skalierungsfaktor, sodass hoechster Grauwert erfasst wird
+    skal = weiß / hoechster_grauwert
+    # Skalierungsfaktor auf gesamtes Szintigramm anwenden
+    image *= skal
+    return image
+
 
 def get_image_A(laenge_quadrant, kantenlaenge, avg_a, mittelpkt):
     """ Erzeugt Objekt A, ist Quadrat.
@@ -183,13 +204,7 @@ def make_szinti():
     image_d = get_image_D(pixel_quadrant, 100, 100, (60, -10))
     quadrant_vier[:, :] = image_d
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    # hoechster Wert: 255 ≙ weiß
-    weiß = 255
-    hoechster_grauwert = np.max(szinti)
-    # Berechnung Skalierungsfaktor, sodass hoechster Grauwert eerfasst wird
-    skal = weiß / hoechster_grauwert
-    # Skalierungsfaktor auf gesamtes Szintigramm anwenden
-    szinti = skal * szinti
+    szinti = make_scale(szinti)
     return szinti, pixel, pixel_quadrant
 
 
