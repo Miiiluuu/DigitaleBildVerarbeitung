@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 import Aufgabe_1_1
 import Aufgabe_3_4
+import Aufgabe_2_2
 # TODO: doppelte Plot-Funktion? Figuresize
 
 
@@ -31,30 +32,7 @@ def berechnung_flaeche_dreieck(hoehe):
     return flaeche
 
 
-def separiere_objekt(image, flaeche):
-    """ Funktion sucht in einem Bild 'image', ob dessen Haufigkeitsverteilung
-        einen Bereich desselben Grauwertes besitzt, wobei dieser Bereich einem
-        bestimmten Flaecheninhalt entspricht und separiert dieses Objekt. 
 
-        Parameter:
-        ----------
-        image: Array, Eingabewerte.
-        
-        flaeche: Flaecheninhalt in Anzahl an Pixeln eines bestimmten Objektes.
-    """
-    # Berechnung der Haeufigkeitsverteilung
-    ordinate, _, _ = plt.hist(image.flatten(), bins=256, density=True)
-    # Bereich finden, der denselben Grauwert  bzw lamda 100 von
-    # Poissonverteilung besitzt und gleichzeitig bestimmter Flaeche in Anzahl
-    # Pixeln eines gleichseitigen Dreieck entspricht
-    # TODO: Derselbe Grauwert, ohne dessen Kenntniss vorauszusetzen?
-    if (... lambda richtig mit Abweichung < np.exp(-17)) and
-        np.sum(DIESER ordinaten-Werte) = flaeche (mit geringem Fehler):
-            # Wenn Bedingung zutrifft, wird dieser Ordinatenwert beibehalten,
-            # alle anderen Ordinatenwerte werden auf Null gesetzt
-            # Umkehrfunktion von hist, um Bild wieder darzustellen
-            # aus Histgramm?
-    return objekt_separiert
    
     
 def plot(ueberschrift, image):
@@ -74,22 +52,35 @@ def plot(ueberschrift, image):
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-    # Anwendung Sobelfilter aufs Bild aus Aufgabe 1.1 zur Kantenextraktion
-    # (und Glaettung)
-    szinti_sobel_ges = Aufgabe_3_4.filter_sobel_image(szinti)
     # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
     # Extraktion des rechten unteren Quadranten
     quadrant_vier = szinti[128:256, 128:256]
-    # (virtueller) Ursprung des Bildes wird in das Zentrum des Teilbildes
-    # gelegt!
-    # nur Pixel durchgehen, indem auch Wert > Null gespeichert ist?
-    # ich kenne Seitenlaenge a
-    # alle Winkel in Bereich [0, pi] durchgehen:
-    for grad in range(np.pi):
-        # was fuer Koordinaten erhaelt man fuer dasselbe alpha?
-        # Berechnen der Koordinaten entsprechend der Hesse'schen Normalform
-        # der Geradengleichung, diese Koordinaten liegen auf einer Linie
-    # Anwendung Sobelfilter: logisches Binaerbild! Konturverkettung?
+    # Anwendung Sobelfilter aufs Teilbild (Flaechenquelle D) aus Bild
+    # Aufgabe 1.1 zur Kantenextraktion
+    # (und Glaettung)
+    quadrant_vier_sobel = Aufgabe_3_4.filter_sobel_image(quadrant_vier)
+    plt.imshow(quadrant_vier_sobel, cmap='gray')
+    # logisches Bild (Binaerbild) aufbauen: mit Kanten Eins, Rest Null
+    # dafür Histogramm anschauen
+    Aufgabe_2_2.erstelle_grauwerthistogramm_abgeschnitten('Grauwerthistogramm',
+                                'fuer Bild aus Aufgabe 1.1, ' +
+                                'gekuerzte Ordinatenachse', r'$f$',
+                                'Häufigkeitsverteilung $h(f)$',
+                                quadrant_vier_sobel.flatten())
+    
+#    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
+#    # Extraktion des rechten unteren Quadranten
+#    quadrant_vier = szinti[128:256, 128:256]
+#    # (virtueller) Ursprung des Bildes wird in das Zentrum des Teilbildes
+#    # gelegt!
+#    # nur Pixel durchgehen, indem auch Wert > Null gespeichert ist?
+#    # ich kenne Seitenlaenge a
+#    # alle Winkel in Bereich [0, pi] durchgehen:
+##    for grad in range(np.pi):
+##        # was fuer Koordinaten erhaelt man fuer dasselbe alpha?
+##        # Berechnen der Koordinaten entsprechend der Hesse'schen Normalform
+##        # der Geradengleichung, diese Koordinaten liegen auf einer Linie
+##    # Anwendung Sobelfilter: logisches Binaerbild! Konturverkettung?
 
 
 if __name__ == "__main__":
