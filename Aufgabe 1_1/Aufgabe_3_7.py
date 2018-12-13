@@ -12,9 +12,6 @@ import Aufgabe_1_1
 import Aufgabe_3_4
 import Aufgabe_2_2
 import Aufgabe_3_3
-# TODO: doppelte Plot-Funktion? Figuresize
-
-
 
 
 def berechnung_flaeche_dreieck(hoehe):
@@ -33,9 +30,6 @@ def berechnung_flaeche_dreieck(hoehe):
     return flaeche
 
 
-
-   
-    
 def plot(ueberschrift, image):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         entsprechenden Subplots, Ueberschriften etc.
@@ -50,27 +44,101 @@ def plot(ueberschrift, image):
     plt.imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
 
 
+def use_schwellwert(image, schwelle_oben):
+    """ Funktion erzeugt aus einem Bild ein logisches Bild (Binaerbild), indem
+        ein bestimmter Bereich mittels des Schwellwertverfahrens separiert
+        wird. Dabei werden a priori Kenntnisse vorausgesetzt
+        (Grauwerthistogramm u.Ä.). Beinhaltet Pixelklassifikation: Einteilung
+        in Objekt- und Nichtobjektpixel.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+        
+        schwelle_oben: oberer Schwellwert. Bis zu dieser Graustufe wird
+        Grauwertverteilung als Objekt gezaehlt.
+    """   
+    # Anlegen eines Null-Arrays, welches Maske enthaelt:
+    # Einsen: Pixel wird als Objekt klassifiziert
+    # Nullen: Pixel wird als Nichtobjekt klassifiziert
+    image_maske = np.zeros_like(image)
+    image_maske[schwelle_oben <= image] = 1
+    return image_maske
+    
+    
+def extract_values(image, value):
+    """ Funktion speichert aus einem Array die einander zugehoerigen (x- und
+         y-)Koordinaten (als Meshgrid), welche einen bestimmten Wert 'value'
+         enthalten. Dabei wird der (virtuelle) Ursprung in das Zentrum des
+         Bildes gelegt.
+         
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+        
+        value: bestimmter Wert, anhand dessen Filterung der Werte.
+    """
+    # Zentrum des Bildes
+    center = len(image) // 2
+    # Abspeichern der einander zugehoerigen Koordinaten 
+    koord_x, koord_y = np.meshgrid(np.arange(-center, center ),
+                                   np.arange(center, -center, step=-1))
+    # Rausfilterung der Untergrundwerte nach einen bestimmten Wert 'value'
+    koord_x = koord_x[image == value]
+    koord_y = koord_y[image == value]
+    return koord_x, koord_y
+
+
+def hough_trafo():
+    """ Anwenden der Hough-Transformation = Kantenorientierte Segmentierung.
+        Mittels der Hesseschen Normalform fuer Geradengleichungen werden 
+        Geraden erkannt (siehe Vorlesung zu Modul MF-MRS_14 Digitale
+        Bildverarbeitung, Folie 202f). Dafuer wird der Normalenvektor vom (virtuellen)
+        Ursprung des Bildes und der zugehrige Winkel parametrisiert
+    
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    winkel = []
+    abstaende = []
+    # verschiedene Winkel durchgehen
+    for alpha in np.linspace(0, 180, 180, endpoint=False):
+        # einzelne aktuelle Winkel abspeichern (so viele wie abstande)
+        winkel.append(np.ones(len(koord_x))*alpha)
+        # Winkel in Bogenmaß umrechen
+        alpha = np.radians(alpha)
+        # Hessesche Normalform der Geradengleichung
+        abstand = koord_x * np.cos(alpha) + koord_y * np.sin(alpha)
+        # zu aktuellen Winkel alle dazu berechneten Abstaende abspeichern
+        abstaende.append(abstand)
+    # Umwandeln der Listen in Arrays
+    winkel = np.array(winkel).ravel()
+    abstaende = np.array(abstaende).ravel()
+    # 2D-Histogramm aus Abstaenden und Winkel darstellen
+    plt.figure()
+    counts, xedges, yedges, image = plt.hist2d(winkel, abstaende, bins=180)
+
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
     # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
     # Extraktion des rechten unteren Quadranten
-    quadrant_vier = szinti[128:256, 128:256]
-    # 1tes Mal Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete,
+    quadrant_vier = Aufgabe_1_1.extract(szinti, 128, 256, 128, 256)
+    # Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete,
     # Löcher in Flächen teilweise aufgefuellt
     quadrant_vier = Aufgabe_3_3.filter_image(quadrant_vier)
     # Anwendung Sobelfilter aufs Teilbild (Flaechenquelle D) aus Bild
     # Aufgabe 1.1 zur Kantenextraktion
-    # (und Glaettung)
     quadrant_vier = Aufgabe_3_4.filter_sobel_image(quadrant_vier) 
     # 2tes mal Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete,
     # Löcher in Flächen teilweise aufgefuellt
     quadrant_vier = Aufgabe_3_3.filter_image(quadrant_vier)
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
     quadrant_vier = Aufgabe_1_1.make_scale(quadrant_vier)
-    # Kontrolldarstellung
-    plt.figure()
-    plt.imshow(quadrant_vier, cmap='gray')
+#    # Kontrolldarstellung
+#    plt.figure()
+#    plt.imshow(quadrant_vier, cmap='gray')
     # logisches Bild (Binaerbild) aufbauen: mit Kanten Eins, Rest Null
     # dafür Histogramm anschauen
     plt.figure()
@@ -79,21 +147,18 @@ def main():
                                 'gekuerzte Ordinatenachse', r'$f$',
                                 'Häufigkeitsverteilung $h(f)$',
                                 quadrant_vier.flatten())
-    # a priori werden Schwellwertgrenzen festgelegt, welche Grauwerte als
-    # Objekt und welche als Untergrund gesetzt werden, sodass Kanten extrahiert
-    # werden
-    quadrant_vier_kanten = np.zeros_like(quadrant_vier)
-    quadrant_vier_kanten[160 <= quadrant_vier] = 1
-    plt.figure()
-    plt.imshow(quadrant_vier_kanten, cmap='gray')
-    # neues Array anlegen, indem lediglich Koordinaten der Kanten (entsprechen
-    # Einsen im logischen Bild) enthalten sind (d.h. f(x,y) ungleich 0)
-    koord_x, koord_y = np.meshgrid(np.arange(-64, 64),
-                                    np.arange(-64, 64))
-    # rausfiltern der Untergrundwerte: Extrahieren der Kanten!
-    koord_x = koord_x[quadrant_vier_kanten == 1]
-    koord_y = koord_y[quadrant_vier_kanten == 1]
-    # welche Kantenpunkte gehören nun zu einer (durchgehenden) Linie?
+    # a priori werden Schwellwertgrenzen festgelegt, wodurch lediglich Kanten
+    # extrahiert werden
+    quadrant_vier_kanten = use_schwellwert(quadrant_vier, 160)
+#    plt.figure()
+#    plt.imshow(quadrant_vier_kanten, cmap='gray')
+    # Extrahieren (nur) der (x- und y-) Koordinaten, bei denen Bildfunktion
+    # f(x) ungleich 0
+    # (d.h. in neuen Koordinaten-arrays sind lediglich Koordinaten der Kanten
+    # (entsprechen Einsen im logischen Bild) enthalten)
+    koord_x, koord_y = extract_values(quadrant_vier_kanten, 1)
+    # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
+    # (sind also kein Rauschen)
     # Pruefen mit Hough-Transformation
     # (siehe Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Folie
     # 202f)
@@ -114,7 +179,7 @@ def main():
     abstaende = np.array(abstaende).ravel()
     # 2D-Histogramm aus Abstaenden und Winkel darstellen
     plt.figure()
-    counts, xedges, yedges, image = plt.hist2d(winkel, abstaende, bins=100)
+    counts, xedges, yedges, image = plt.hist2d(winkel, abstaende, bins=180)
         
 #    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
 #    # Extraktion des rechten unteren Quadranten

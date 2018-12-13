@@ -177,6 +177,35 @@ def get_image_D(laenge_quadrant, hoehe, avg_d, spitze):
                 image_d[y, x] = np.random.poisson(avg_d)
     return image_d
 
+def extract(image, y_begin, y_end, x_begin, x_end):
+    """ Einteilung des Szintigramms in vier Quadranten,
+        jedes Objekt befindet sich in jeweils einem Quadranten
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+        
+        y_begin: Startpixel (in y-Richtung), welcher den Beginn des
+        entsprechenden Quadranten bezeichnet. Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten.
+        
+        y_end: (vor)letzter Pixel (in y-Richtung), welcher das Ende des
+        entsprechenden Quadranten bezeichnet. Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten.
+        
+        x_begin: Startpixel (in x-Richtung), welcher den Beginn des
+        entsprechenden Quadranten bezeichnet. Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten.
+        
+        x_end: (vor)letzter Pixel (in x-Richtung), welcher das Ende des
+        entsprechenden Quadranten bezeichnet. Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten.
+        
+        TODO: Zeichnung??
+    """
+    quadrant = image[y_begin:y_end, x_begin:x_end]
+    return quadrant
+    
 
 def make_szinti():
     """ Erzeugung des Szintigramms. """
@@ -191,10 +220,10 @@ def make_szinti():
     szinti = np.zeros((pixel, pixel))
     # Einteilung des Szintigramms in vier Quadranten
     # jedes Objekt befindet sich in jeweils einem Quadranten
-    quadrant_eins = szinti[0:128, 128:256]
-    quadrant_zwei = szinti[0:128, 0:128]
-    quadrant_drei = szinti[128:256, 0:128]
-    quadrant_vier = szinti[128:256, 128:256]
+    quadrant_eins = extract(szinti, 0, 128, 128, 256)
+    quadrant_zwei = extract(szinti, 0, 128, 0, 128)
+    quadrant_drei = extract(szinti, 128, 256, 0, 128)
+    quadrant_vier = extract(szinti, 128, 256, 128, 256)
     # Objekte dem richtigen Platz im Szintigramm zuweisen
     image_a = get_image_A(pixel_quadrant, n, 200, (60, 60))
     quadrant_eins[:, :] = image_a
