@@ -128,14 +128,14 @@ if __name__ == "__main__":
     # Kantenextraktion:
     # Bildung der ersten Ableitung aus zwei orthogonalen Richtungen
     # und damit Gradientenbildbestimmung (siehe Vorlesung)
-    # Sobel drei Zeilen: mittlere zur Kantenextraktion (staerker gewichtet)
-    # und Nachbarn zur Glaettung
+    # Sobel drei Zeilen: Gradient ueber 3 Zeilen, damit rauschunempfindlicher
     # Robertsfilter besitzt kleinere Matrix (2x2),
     # Robert bildet Differenzen in Richtungen 45° und 135° (diagonal)
     # bezieht fuer
     # Kantenextraktion
-    # kleineren Bereich mit ein, d.h. Sobel verschmierter aber 
-    # rauschunempfindlicher?
+    # kleineren Bereich mit ein, d.h. Sobel rauschunempfindlicher
+    # fuer Kantenfiilter gilt Isotropie: Filterantwort soll nicht von der
+    # Richtung der Kante abhaengen: beide Filter sehen in etwa gleich aus
     # Sobel bildet Differenzen in horizontaler und vertikaler Richtungen
     # d.h. wirkt am staerksten auf horizontale und vertikale Grauwertkanten
     # Sobel und Robert haben Richtungsabhaengigkeit

@@ -1,8 +1,7 @@
 """
-    Aufgabe 3.7:
-    Extrahieren des rechten unteren Quadranten des Bild aus Aufgabe 1.1
-    (Flaechenquelle D, gleichseitiges Dreieck) als Teilbild. Dabei Durchführung
-    einer Kantenextraktiion mit anschließender Hough-Transformation.
+    Aufgabe 3.6:
+    Berechnung des geometrischen und den Massenschwerpunkt fuer ein Objekt,
+    bestehend aus den Flaechenquellen B und C aus Aufgabe 1.1
 """
 
 import numpy as np
@@ -10,8 +9,8 @@ import matplotlib.pyplot as plt
 
 import Aufgabe_1_1
 import Aufgabe_3_4
-import Aufgabe_2_2
 import Aufgabe_3_3
+import Aufgabe_3_7
 
 
 def make_logic_image(image, schwelle_oben):
@@ -25,14 +24,14 @@ def make_logic_image(image, schwelle_oben):
         ----------
         image: Array, Eingabewerte.
 
-        schwelle_unten: unterer Schwellwert. Ab naechstgroeßeren Graustufe wird
+        schwelle_oben: oberer Schwellwert. Bis zu dieser Graustufe wird
         Grauwertverteilung als Objekt gezaehlt.
     """
     # Anlegen eines Null-Arrays, welches Maske enthaelt:
     # Einsen: Pixel wird als Objekt klassifiziert
     # Nullen: Pixel wird als Nichtobjekt klassifiziert
     image_maske = np.zeros_like(image)
-    image_maske[schwelle_oben < image] = 1
+    image_maske[schwelle_oben <= image] = 1
     return image_maske
 
 
@@ -118,51 +117,55 @@ def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
     plt.show()
 
 
-def main():
-    # Bild- Array (aus Aufgabe 1.1) erstellen
-    szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
-    # Extraktion des rechten unteren Quadranten
-    quadrant_vier = Aufgabe_1_1.extract(szinti, 128, 256, 128, 256)
-    # Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete,
-    # Löcher in Flächen teilweise aufgefuellt
-    quadrant_vier = Aufgabe_3_3.filter_image(quadrant_vier)
-    # Anwendung Sobelfilter aufs Teilbild (Flaechenquelle D) aus Bild
-    # Aufgabe 1.1 zur Kantenextraktion
-    quadrant_vier = Aufgabe_3_4.filter_sobel_image(quadrant_vier)
-    # 2tes mal Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete,
-    # Löcher in Flächen teilweise aufgefuellt
-    quadrant_vier = Aufgabe_3_3.filter_image(quadrant_vier)
-    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    quadrant_vier = Aufgabe_1_1.make_scale(quadrant_vier)
-#    # Kontrolldarstellung
-#    plt.figure()
-#    plt.imshow(quadrant_vier, cmap='gray', extent=[-128, 128, -128, 128])
-#    # logisches Bild (Binaerbild) aufbauen: mit Kanten Eins, Rest Null
-#    # dafür Histogramm anschauen
-#    plt.figure()
-#    Aufgabe_2_2.erstelle_grauwerthistogramm_abgeschnitten('Grauwerthistogramm',
-#                                'fuer Bild aus Aufgabe 1.1, ' +
-#                                'gekuerzte Ordinatenachse', r'$f$',
-#                                'Häufigkeitsverteilung $h(f)$',
-#                                quadrant_vier.flatten())
-    # a priori werden Schwellwertgrenzen festgelegt, wodurch lediglich Kanten
-    # extrahiert werden
-    quadrant_vier_kanten = make_logic_image(quadrant_vier, 160)
-    # Extrahieren (nur) der (x- und y-) Koordinaten, bei denen Bildfunktion
-    # f(x) ungleich 0
-    # (d.h. in neuen Koordinaten-arrays sind lediglich Koordinaten der Kanten
-    # (entsprechen Einsen im logischen Bild) enthalten)
-    koord_x, koord_y = extract_values(quadrant_vier_kanten, 1)
-    # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
-    # (sind also kein Rauschen)
-    # Pruefen mit Hough-Transformation
-    # (siehe Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Folie
-    # 202f)
-    hough_trafo(koord_x, koord_y)
+#def main():
+# Bild- Array (aus Aufgabe 1.1) erstellen
+szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
+# Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
+# Extraktion des rechten unteren Quadranten
+szinti = Aufgabe_1_1.extract(szinti, 0, 256, 0, 128)
+plt.imshow(szinti, cmap='gray')
+# momente berechnen
+m00 = np.sum(szinti)
+m10 = 0
+schleife = np.shape(szinti)[1]
+for x in range(schleife):
+    m10 += np.sum(szinti[:, x]) * x
+szinti_t = np.transpose(szinti)
+schleife_t = np.shape(szinti_t)[1]
+m01 = 0
+for x in range(schleife_t):
+    m01 += np.sum(szinti_t[:, x]) * x
+# Rechnung Schwerpunkte nach Vorlesung zu Modul MF-MRS_14 Digitale
+# Bildverarbeitung Folie 213f
+# Massenschwerpunkt in x-Richtung
+x_s = m10 /m00
+# Massenschwerpunkt in y-Richtung
+y_s = m01 /m00
+# Maskieren
+# geometrischer Schwerpunkt wird entsprechend berechnet, aber zuvor wird Bild-
+# funktion ueberall auf Eins gesetzt
+# Schwellwertbedingung: in welchem Intervall liegen Objektpixel?
+szinti_geo = Aufgabe_3_7.make_logic_image(szinti, 0)
+# momente berechnen
+m00_geo = np.sum(szinti_geo)
+m10_geo = 0
+schleife_geo = np.shape(szinti_geo)[1]
+for x in range(schleife_geo):
+    m10_geo += np.sum(szinti_geo[:, x]) * x
+szinti_t_geo = np.transpose(szinti_geo)
+schleife_t_geo = np.shape(szinti_t_geo)[1]
+m01_geo = 0
+for x in range(schleife_t_geo):
+    m01_geo += np.sum(szinti_t_geo[:, x]) * x
+# Rechnung Schwerpunkte nach Vorlesung zu Modul MF-MRS_14 Digitale
+# Bildverarbeitung Folie 213f
+# Massenschwerpunkt in x-Richtung
+x_geo = m10_geo /m00_geo
+# Massenschwerpunkt in y-Richtung
+y_geo = m01_geo /m00_geo
+   
 
-
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+    #main()
 
 # TDO: externe Console bzw Windowkonsole funktioniert nicht?

@@ -242,6 +242,7 @@ def main():
     szinti, pixel, pixel_quadrant = make_szinti()
     # Plot zeichnen
     plt.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 if __name__ == "__main__":
