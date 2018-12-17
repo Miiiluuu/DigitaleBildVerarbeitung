@@ -117,55 +117,99 @@ def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
     plt.show()
 
 
-#def main():
-# Bild- Array (aus Aufgabe 1.1) erstellen
-szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-# Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
-# Extraktion des rechten unteren Quadranten
-szinti = Aufgabe_1_1.extract(szinti, 0, 256, 0, 128)
-plt.imshow(szinti, cmap='gray')
-# momente berechnen
-m00 = np.sum(szinti)
-m10 = 0
-schleife = np.shape(szinti)[1]
-for x in range(schleife):
-    m10 += np.sum(szinti[:, x]) * x
-szinti_t = np.transpose(szinti)
-schleife_t = np.shape(szinti_t)[1]
-m01 = 0
-for x in range(schleife_t):
-    m01 += np.sum(szinti_t[:, x]) * x
-# Rechnung Schwerpunkte nach Vorlesung zu Modul MF-MRS_14 Digitale
-# Bildverarbeitung Folie 213f
-# Massenschwerpunkt in x-Richtung
-x_s = m10 /m00
-# Massenschwerpunkt in y-Richtung
-y_s = m01 /m00
-# Maskieren
-# geometrischer Schwerpunkt wird entsprechend berechnet, aber zuvor wird Bild-
-# funktion ueberall auf Eins gesetzt
-# Schwellwertbedingung: in welchem Intervall liegen Objektpixel?
-szinti_geo = Aufgabe_3_7.make_logic_image(szinti, 0)
-# momente berechnen
-m00_geo = np.sum(szinti_geo)
-m10_geo = 0
-schleife_geo = np.shape(szinti_geo)[1]
-for x in range(schleife_geo):
-    m10_geo += np.sum(szinti_geo[:, x]) * x
-szinti_t_geo = np.transpose(szinti_geo)
-schleife_t_geo = np.shape(szinti_t_geo)[1]
-m01_geo = 0
-for x in range(schleife_t_geo):
-    m01_geo += np.sum(szinti_t_geo[:, x]) * x
-# Rechnung Schwerpunkte nach Vorlesung zu Modul MF-MRS_14 Digitale
-# Bildverarbeitung Folie 213f
-# Massenschwerpunkt in x-Richtung
-x_geo = m10_geo /m00_geo
-# Massenschwerpunkt in y-Richtung
-y_geo = m01_geo /m00_geo
-   
+def calc_schwerpkt(image):
+    """ Funktion berechnet bestimmte Momente von Bildern und darauf aufbauend
+        den Schwerpunkt dieses Bildes entsprechend Vorlesung zum Modul
+        MF-MRS_14 Digitale Bildverarbeitung, Folie 213f).
 
-#if __name__ == "__main__":
-    #main()
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    moment0 = np.sum(image)
+    moment = 0
+    schleife = np.shape(image)[1]
+    for x in range(schleife):
+        moment += np.sum(image[:, x]) * x
+    # in x-Richtung
+    schwerpkt = moment / moment0
+    return schwerpkt
+    
+
+def main():
+    # Bild- Array (aus Aufgabe 1.1) erstellen
+    szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
+    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
+    # Extraktion des rechten unteren Quadranten
+    szinti = Aufgabe_1_1.extract(szinti, 0, 256, 0, 128)
+    # Berechnung von geometrischen Schwerpunkt in x-Richtung
+    schwerpkt_masse_x = calc_schwerpkt(szinti)
+    # Berechnung von Massenschwerpunkt in y-Richtung
+    szinti_t = np.transpose(szinti)
+    schwerpkt_masse_y = calc_schwerpkt(szinti_t)
+    # Berechnung vom geometrischen Schwerpunkt
+    # dafuer wird zuvor zunaechst logisches Bild erzeugt:
+    # Bildfunktion wird ueberall auf Eins gesetzt
+    szinti_geo = Aufgabe_3_7.make_logic_image(szinti, 0)
+    # geometrischer Schwerpunkt in x-Richtung
+    schwerpkt_geo_x = calc_schwerpkt(szinti_geo)
+    # Berechnung von Massenschwerpunkt in y-Richtung
+    szinti_geo_t = np.transpose(szinti_geo_t)
+    schwerpkt_geo_y = calc_schwerpkt(szinti_geo_t)
+    
+#    # momente berechnen
+#    m00 = np.sum(szinti)
+#    m10 = 0
+#    schleife = np.shape(szinti)[1]
+#    for x in range(schleife):
+#        m10 += np.sum(szinti[:, x]) * x
+#    szinti_t = np.transpose(szinti)
+#    schleife_t = np.shape(szinti_t)[1]
+#    m01 = 0
+#    for x in range(schleife_t):
+#        m01 += np.sum(szinti_t[:, x]) * x
+#    # Rechnung Schwerpunkte nach Vorlesung zu Modul MF-MRS_14 Digitale
+#    # Bildverarbeitung Folie 213f
+#    # Massenschwerpunkt in x-Richtung
+#    x_s = m10 /m00
+#    # Massenschwerpunkt in y-Richtung
+#    y_s = m01 /m00
+#    # Maskieren
+#    # geometrischer Schwerpunkt wird entsprechend berechnet, aber zuvor wird Bild-
+#    # funktion ueberall auf Eins gesetzt
+#    # Schwellwertbedingung: in welchem Intervall liegen Objektpixel?
+#    szinti_geo = Aufgabe_3_7.make_logic_image(szinti, 0)
+#    # momente berechnen
+#    m00_geo = np.sum(szinti_geo)
+#    m10_geo = 0
+#    schleife_geo = np.shape(szinti_geo)[1]
+#    for x in range(schleife_geo):
+#        m10_geo += np.sum(szinti_geo[:, x]) * x
+#    szinti_t_geo = np.transpose(szinti_geo)
+#    schleife_t_geo = np.shape(szinti_t_geo)[1]
+#    m01_geo = 0
+#    for x in range(schleife_t_geo):
+#        m01_geo += np.sum(szinti_t_geo[:, x]) * x
+#    # Rechnung Schwerpunkte nach Vorlesung zu Modul MF-MRS_14 Digitale
+#    # Bildverarbeitung Folie 213f
+#    # Massenschwerpunkt in x-Richtung
+#    x_geo = m10_geo /m00_geo
+#    # Massenschwerpunkt in y-Richtung
+#    y_geo = m01_geo /m00_geo
+#    # Einzeichnen des geometrischen Schwerpunktes
+#    plt.figure()
+#    plt.imshow(szinti, cmap='gray')
+#    plt.axhline(x_s, color="deeppink", linestyle="dashed")
+#    plt.axvline(y_s, color="deeppink", linestyle="dashed")
+#    # Einzeichnen des Massenschwerpunktes
+#    plt.figure()
+#    plt.imshow(szinti, cmap='gray')
+#    plt.axhline(x_geo, color="deeppink", linestyle="dashed")
+#    # Ueberlebenswahrscheinlichkeit nach 1 Jahr, 2 und 5 Jahren
+#    # (1 Jahr ≙ 12 Monate)
+#    plt.axvline(y_geo, color="deeppink", linestyle="dashed")
+
+if __name__ == "__main__":
+    main()
 
 # TDO: externe Console bzw Windowkonsole funktioniert nicht?
