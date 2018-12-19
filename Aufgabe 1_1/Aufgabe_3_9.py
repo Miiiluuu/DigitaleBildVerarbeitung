@@ -32,43 +32,36 @@ def medianfilter_5x5(image):
     return image_gefiltert
 
 
-def main():
-    # Bild- Array (aus Aufgabe 1.1) erstellen
-    szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
-    # Extraktion des linken oberen Quadranten (Flaechenquelle B)
-    szinti = Aufgabe_1_1.extract(szinti, 0, 128, 0, 128)
-    # Kontrolldarstellung
-    plt.figure()
-    # Hinzufuegen der Ueberschrift zum Plot
-    plt.suptitle("Originalbild", fontsize=16)
-    plt.imshow(szinti, cmap='gray')
-    # mehrmalige Anwendung von Medianfiltern (verschiedener Groeße), um
-    # Bildrauschen (durch radioaktivem Zerfall) zu reduzieren, aber Lage
-    # und Steilheit vom Bild erhalten!
-    # zweimaliges Anwenden eines 5x5 Medianfilters
-    for i in range(2):
-        szinti = medianfilter_5x5(szinti)
-    # zweimaliges Anwenden eines 3x3 Medianfilters
-    for i in range(2):
-        szinti = Aufgabe_3_3.filter_image(szinti)
-    # Kontrolldarstellung
-    plt.figure()
-    # Hinzufuegen der Ueberschrift zum Plot
-    plt.suptitle("gefiltertes Bild", fontsize=16)
-    plt.imshow(szinti, cmap='gray')
+#def main():
+# Bild- Array (aus Aufgabe 1.1) erstellen
+szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
+# Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
+# Extraktion des linken oberen Quadranten (Flaechenquelle B)
+szinti = Aufgabe_1_1.extract(szinti, 0, 128, 0, 128)
+# Kontrolldarstellung
+plt.figure()
+# Hinzufuegen der Ueberschrift zum Plot
+plt.suptitle("Originalbild", fontsize=16)
+plt.imshow(szinti, cmap='gray')
+# mehrmalige Anwendung von Medianfiltern (verschiedener Groeße), um
+# Bildrauschen (durch radioaktivem Zerfall) zu reduzieren, aber Lage
+# und Steilheit vom Bild erhalten!
+# zweimaliges Anwenden eines 5x5 Medianfilters
+for i in range(2):
+    szinti = medianfilter_5x5(szinti)
+# zweimaliges Anwenden eines 3x3 Medianfilters
+for i in range(2):
+    szinti = Aufgabe_3_3.filter_image(szinti)
+# Kontrolldarstellung
+plt.figure()
+# Hinzufuegen der Ueberschrift zum Plot
+plt.suptitle("gefiltertes Bild", fontsize=16)
+plt.imshow(szinti, cmap='gray')
 
+  
     
     
-    
-        
-    
-    
-
-    
-
-
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
 
 # TDO: externe Console bzw Windowkonsole funktioniert nicht?
