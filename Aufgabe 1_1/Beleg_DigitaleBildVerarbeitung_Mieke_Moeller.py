@@ -1,11 +1,13 @@
 """
-    Aufgabe 1.1:
-    Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256 Pixel,
-    aufgebaut aus vier Flaechenquellen (weitere Parameter siehe Vorlesung zu
-    Modul MF-MRS_14 Digitale Bildverarbeitung)
+    Programmierbeleg zum Modul MF-MRS_14 Digitale Bildverarbeitung, WS 18/19:
+    Unter anderem Darstellung eines Szintigramms, anhand dessen
+    verschiedene Bildmodifikatiotionen durchgefuehrt wird.
 
     @author: Mieke Möller
 """
+# TODO: Fkt sortieren nach Berechnen, Plotten
+# TODO: Style Code Analysis bei Karl angucken
+# TODO: Fkt make.szinti() unnoetigerweise sehr oft aufgerufen?
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -263,12 +265,144 @@ def make_szinti():
     return szinti, pixel, pixel_quadrant
 
 
-def main():
+def extraktion_aus_array(array, y):
+    """ Extrahiert für eine entsprechenden Ordinatenwertlinie alle
+        dazugehörigen (Grau-)Werte.
+
+        Parameter:
+        ----------
+        array: Array, Eingabewerte.
+
+        y: Ordinatenwert, bei dem alle dazugehoerigen Abszissenwerte
+        extrahiert werden.
+    """
+    teil_array = array[y, :]
+    return teil_array
+
+
+# TODO: Achsenbeschriftungen doppelt?
+def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2,
+                      abszisse1, ordinate1, abszisse2, ordinate2):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
+        entsprechenden Ueberschriften, Achsenbeschriftung etc.
+    """
+    fig = plt.figure(figsize=(10, 5))
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    # erster Subplot
+    ax1 = fig.add_subplot(121)
+    # Hinzufuegen einer Unterueberschrift
+    plt.title(unterueberschrift1)
+    # Achsenbeschriftungen
+    plt.xlabel(abszisse1)
+    plt.ylabel(ordinate1)
+    # zweiter Subplot
+    ax2 = fig.add_subplot(122)
+    # Hinzufuegen einer Unterueberschrift
+    plt.title(unterueberschrift2)
+    # Achsenbeschriftungen
+    plt.xlabel(abszisse2)
+    plt.ylabel(ordinate2)
+    # Ueberlappungen vermeiden
+    plt.tight_layout(rect=[0, 0.03, 1, 0.9])
+    # Position der Subplots untereinander veraendern:
+    # vertikalen Abstand vergroeßern
+    plt.subplots_adjust(wspace=0.3)
+    return ax1, ax2
+
+
+def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
+    """ Stellt Grauwertprofile fuer das Bild aus Aufgabe 1.1. längs
+        bestimmter y- Linien dar.
+
+        Parameter:
+        ----------
+        xwerte1, xwerte2: Abszissenwerte entlang bestimmter y- Linien.
+
+        grauwerte1, grauwerte2: Grauwerte entlang bestimmter y- Linien.
+    """
+    ax1, ax2 = plot_vorbereitung('Grauwertprofile fuer das Bild aus ' +
+                                 'Aufgabe 1.1', 'laengs y = 60',
+                                 'laengs y = -60', r'$x/mm$',
+                                 'Grauwert', r'$x/mm$',
+                                 'Grauwert')
+    ax1.plot(xwerte1, grauwerte1)
+    ax2.plot(xwerte2, grauwerte2)
+    plt.show()
+
+
+def erstelle_grauwerthist(werte):
+    """ Erstellung Grauwertprofil, Darstellung auf zwei Weisen:
+        1. logarithmischer Skaleneinteilung,
+        2. Zur besseren Darstellung kleinerer Werte ist Ordinatenachse bei
+        bestimmten Wert abgeschnitten.
+
+        Parameter:
+        ----------
+        werte: Array, Eingabewerte
+    """
+    ax1, ax2 = plot_vorbereitung("Grauwerthistogramm fuer das Bild " +
+                                 "aus Aufgabe 1.1", 'logarithmische Skala',
+                                 'gekuerzte Ordinatenachse', r'$f$',
+                                 'Häufigkeitsverteilung $h(f)$', r'$f$',
+                                 'Häufigkeitsverteilung $h(f)$')
+    ax1.hist(werte, bins=256, density=True, log=True)
+    ordinate, _, _ = ax2.hist(werte, bins=256, density=True)
+    # Ordinatenwerte sortieren
+    ordinate_sort = np.sort(ordinate)
+    # Ordinatenachse kuerzen
+    plt.ylim(0, ordinate_sort[-2] * 1.1)
+    # Position der Subplots untereinander veraendern:
+    # vertikalen Abstand vergroeßern
+    plt.subplots_adjust(wspace=0.3)
+    plt.show()
+
+
+def aufgabe_1_1():
+    """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
+        Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
+        Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung)
+    """
     szinti, pixel, pixel_quadrant = make_szinti()
     # Szintigramm als Plot zeichnen
     plt.figure()
     plt.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
+
+
+def aufgabe_2_1():
+    """
+        Erstellt die Grauwertprofile fuer das Bild aus Aufgabe 1.1 laengs der
+        Linien y = 60 mm und y = -60 mm.
+    """
+    # Bild- Array (aus Aufgabe 1.1) erstellen
+    szinti, pixel, pixel_quadrant = make_szinti()
+    # Extrahieren Grauwerte entlang von bestimmten y- Linien
+    # (siehe Aufgabenstellung):
+    # laengs y = 60, mit Umrechnung globales/lokales Koordinatensystem
+    grauwertprofil_60 = extraktion_aus_array(szinti, pixel_quadrant - 60)
+    # laengs y = -60, mit Umrechnung globales/lokales Koordinatensystem
+    grauwertprofil_minus60 = extraktion_aus_array(szinti, pixel_quadrant + 60)
+    # Plots: Erstellung Grauwertprofile
+    plot_2_1(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60,
+             np.arange(-pixel_quadrant, pixel_quadrant),
+             grauwertprofil_minus60)
+
+
+def aufgabe_2_2():
+    # Bild- Array (aus Aufgabe 1.1) erstellen
+    szinti, pixel, pixel_quadrant = make_szinti()
+    # Grauwerthistogramm zeichnen:
+    erstelle_grauwerthist(szinti.flatten())
+
+
+def main():
+    # Aufruf Aufgabe 1.1
+    aufgabe_1_1()
+    # Aufruf Aufgabe 2.1
+    aufgabe_2_1()
+    # Aufruf Aufgabe 2.2
+    aufgabe_2_2()
 
 
 if __name__ == "__main__":

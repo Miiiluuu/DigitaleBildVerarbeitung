@@ -1,7 +1,9 @@
 """
     Aufgabe 2.1:
-    Erstellt die Grauwertprofile fuer das Bild aus Aufgabe 1.1 laengs
-    bestimmter y- Linien.
+    Erstellt die Grauwertprofile fuer das Bild aus Aufgabe 1.1 laengs der
+    Linien y = 60 mm und y = -60 mm.
+    
+    @author: Mieke Möller
 """
 
 import numpy as np
@@ -21,7 +23,6 @@ def extraktion_aus_array(array, y):
         y: Ordinatenwert, bei dem alle dazugehoerigen Abszissenwerte
         extrahiert werden.
     """
-    # TODO: nur globalen Wert eintippen??
     teil_array = array[y, :]
     return teil_array
 
@@ -50,10 +51,13 @@ def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2,
     plt.ylabel(ordinate2)
     # Ueberlappungen vermeiden
     plt.tight_layout(rect=[0, 0.03, 1, 0.9])
+    # Position der Subplots untereinander veraendern:
+    # vertikalen Abstand vergroeßern
+    plt.subplots_adjust(wspace=0.3)
     return ax1, ax2
 
 
-def plot(xwerte1, grauwerte1, xwerte2, grauwerte2):
+def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
     """ Stellt Grauwertprofile fuer das Bild aus Aufgabe 1.1. längs
         bestimmter y- Linien dar.
 
@@ -63,8 +67,6 @@ def plot(xwerte1, grauwerte1, xwerte2, grauwerte2):
 
         grauwerte1, grauwerte2: Grauwerte entlang bestimmter y- Linien.
     """
-    # TODO: Achsenbeschriftungen allgemeiner machen bzw was mit {}
-    # reinschreiben!!!
     ax1, ax2 = plot_vorbereitung('Grauwertprofile fuer das Bild aus ' +
                                  'Aufgabe 1.1', 'laengs y = 60',
                                  'laengs y = -60', r'$x/mm$',
@@ -72,22 +74,22 @@ def plot(xwerte1, grauwerte1, xwerte2, grauwerte2):
                                  'Grauwert')
     ax1.plot(xwerte1, grauwerte1)
     ax2.plot(xwerte2, grauwerte2)
-
-    plt.show
+    plt.show()
 
 
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
     # Extrahieren Grauwerte entlang von bestimmten y- Linien
-    # (siehe Aufgabenstellung)
-    # laengs y = 60, mit Umrechnung Koordinaten
+    # (siehe Aufgabenstellung):
+    # laengs y = 60, mit Umrechnung globales/lokales Koordinatensystem
     grauwertprofil_60 = extraktion_aus_array(szinti, pixel_quadrant - 60)
-    # laengs y = -60, mit Umrechnung Koordinaten
+    # laengs y = -60, mit Umrechnung globales/lokales Koordinatensystem
     grauwertprofil_minus60 = extraktion_aus_array(szinti, pixel_quadrant + 60)
     # Plots: Erstellung Grauwertprofile
-    plot(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60,
-         np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_minus60)
+    plot_2_1(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60,
+             np.arange(-pixel_quadrant, pixel_quadrant),
+             grauwertprofil_minus60)
 
 
 if __name__ == "__main__":
