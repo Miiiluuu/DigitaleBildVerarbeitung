@@ -8,6 +8,8 @@
 # TODO: Fkt sortieren nach Berechnen, Plotten
 # TODO: Style Code Analysis bei Karl angucken
 # TODO: Fkt make.szinti() unnoetigerweise sehr oft aufgerufen?
+# TODO: immer rescaled?
+# TODO: Funktion in Windowskonsole?
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -358,6 +360,50 @@ def erstelle_grauwerthist(werte):
     plt.show()
 
 
+def mittelwert_grauwerthist(ordinate, abszisse):
+    """ Berechnet den Mittelwert eines Grauwert-Histogramms.
+
+        Parameter:
+        ----------
+
+        ordinate: relative Histogrammverteilung (Ordinatenwerte des
+        Histogramms).
+
+        abszisse: Grauwerte (Abszisse) des Grauwert-Histogramms.
+    """
+    # Berechnung vom  Mittelwertes des Grauwert-Histogramms entsprechend
+    # der Vorlesung, Folie 33 aus dem Modul MF-MRS_14 Digitale
+    # Bildverarbeitung
+    avg_hist = np.sum(abszisse * ordinate)
+    print(f'''Der Mittelwertes des Grauwert-Histogramms des Szintigramms ''' +
+          f'''betraegt {np.round(avg_hist, 3)}.''')
+    return avg_hist
+
+
+def schiefe_grauwerthist(ordinate, abszisse, mittel):
+    """ Berechnet die Schiefe eines Grauwert-Histogramms.
+
+        Parameter:
+        ----------
+
+        ordinate: relative Histogrammverteilung (Ordinatenwerte des
+        Histogramms).
+
+        abszisse: Grauwerte (Abszisse) des Grauwert-Histogramms.
+
+        mittel: Mittelwert des Grauwert-Histogramms.
+    """
+    # Berechnung der Schiefe des Grauwert-Histogramms entsprechend
+    # der Vorlesung, Folie 34 aus dem Modul MF-MRS_14 Digitale
+    # Bildverarbeitung:
+    # Berechnen der Varianz des Grauwert-Histogramms
+    varianz = np.sum(ordinate * (abszisse - mittel)**2)
+    drittes_moment = np.sum(ordinate * (abszisse - mittel)**3)
+    schiefe = drittes_moment / varianz**(3 / 2)
+    print(f'''Die Schiefe des Grauwert-Histogramms aus dem Szintigramm''' +
+          f'''betraegt {np.round(schiefe, 3)}.''')
+
+
 def aufgabe_1_1():
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
         Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
@@ -390,10 +436,29 @@ def aufgabe_2_1():
 
 
 def aufgabe_2_2():
+    """ Erstellt das Grauwerthistogramm des Bildes aus Aufgabe 1.1 und stellt
+        es graphisch dar. """
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = make_szinti()
     # Grauwerthistogramm zeichnen:
     erstelle_grauwerthist(szinti.flatten())
+ 
+ 
+def aufgabe_2_3():
+    """ Berechnet Mittelwert und Schiefe des Grauwert-Histogramms aus Aufgabe
+        2.2.
+    """
+    # Bild- Array (aus Aufgabe 1.1) erstellen
+    szinti, pixel, pixel_quadrant = make_szinti()
+    # relative Histogrammverteilung aus dem Bild aus Aufgabe 1.1
+    # (Ordinatenwerte des Grauwerthistogramms) erstellen
+    haufigkeit, _ = np.histogram(szinti, bins=256, density=True)
+    # Grauwerte (Abszisse) des Grauwert-Histogramms
+    grauwerte = np.arange(pixel)
+    # Mittelwert des Grauwertdiagramms aus Aufgabe 2.2 berechnen
+    avg_hist = mittelwert_grauwerthist(haufigkeit, grauwerte)
+    # Schiefe des Grauwertdiagramms aus Aufgabe 2.2 berechnen
+    schiefe_grauwerthist(haufigkeit, grauwerte, avg_hist)
 
 
 def main():
@@ -403,6 +468,8 @@ def main():
     aufgabe_2_1()
     # Aufruf Aufgabe 2.2
     aufgabe_2_2()
+    # Aufruf Aufgabe 2.3
+    aufgabe_2_3()
 
 
 if __name__ == "__main__":
