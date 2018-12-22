@@ -27,8 +27,8 @@ def extraktion_aus_array(array, y):
     return teil_array
 
 
-def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2,
-                      abszisse1, ordinate1, abszisse2, ordinate2):
+def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
+                          abszisse1, ordinate1, abszisse2, ordinate2):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         entsprechenden Ueberschriften, Achsenbeschriftung etc.
     """
@@ -67,7 +67,7 @@ def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
 
         grauwerte1, grauwerte2: Grauwerte entlang bestimmter y- Linien.
     """
-    ax1, ax2 = plot_vorbereitung('Grauwertprofile fuer das Bild aus ' +
+    ax1, ax2 = plot_vorbereitung_2sp('Grauwertprofile fuer das Bild aus ' +
                                  'Aufgabe 1.1', 'laengs y = 60',
                                  'laengs y = -60', r'$x/mm$',
                                  'Grauwert', r'$x/mm$',

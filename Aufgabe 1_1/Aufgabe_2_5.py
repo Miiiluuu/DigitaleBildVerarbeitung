@@ -7,6 +7,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
+import copy
 
 import Aufgabe_1_1
 import Aufgabe_2_4
@@ -41,10 +42,12 @@ def erstellung_bitebenen(image):
     axs[0].set_title('Ursprungsbild')
     # einzelne Bitebenen erstellen
     ebene = []
+    # Kopie des Eingabe-Arrays, um Originalbild unveraendert zu lassen!
+    image_copy = copy.copy(image)
     for i in range(7, -1, -1):
-        bitebene = np.zeros((len(image), len(image)))
-        bitebene[image >= 2**(i)] = 1
-        image[image >= 2**(i)] -= 2**(i)
+        bitebene = np.zeros((len(image_copy), len(image_copy)))
+        bitebene[image_copy >= 2**(i)] = 1
+        image_copy[image_copy >= 2**(i)] -= 2**(i)
         ebene.append(bitebene)
     # Plots der einzelnen Bitebenen mit Unterueberschriften
     for i in range(7, -1, -1):
@@ -98,8 +101,8 @@ def main():
 if __name__ == "__main__":
     main()
 
-    # erst Bilder dann Tabelle?
-    # Ergebnisse vergleichen
+    # TODO: Ergebnisse vergleichen
+    
     # Interpretation:
     # einzelne Bitebenen entspricht Zahlencodierung
     # es werden nur Farbkontraste wirklich sichtbar in oberen Bitebenen?
@@ -109,7 +112,6 @@ if __name__ == "__main__":
     # daraus folgt Negativer Infogehalt? = sehr gering?
     # wann besten Infogehalt:laut Bildern bei Bitebene 5, aber laut Tabelle
     # größter Infogehalt bei Bitebene Null? 
-    
     # ist kein gutes Maß fuer Bitebenen,da Einsen und Nullen
     # 7 ist relativ wichtig (most signifikant), unt. weiß / schwarz
     # Histogramm enthaelt keine raumlichen Infos

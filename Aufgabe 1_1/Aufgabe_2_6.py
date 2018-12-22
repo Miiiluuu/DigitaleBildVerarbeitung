@@ -20,8 +20,6 @@ def differenzbild(image):
         ----------
         image: Array, Eingabewerte.
     """
-    # Nullarray anlegen, TODO: Annahme das quadratisches Eingangsarray...
-    # Aendern?
     differenz_image = np.zeros((len(image), len(image)))
     # Berechnung nach Differenzverfahren entsprechend der Vorlesung,
     # Folie 43f aus dem Modul MF-MRS_14 Digitale Bildverarbeitung
@@ -32,15 +30,8 @@ def differenzbild(image):
     # vermeiden
     konstante = np.absolute(np.amin(differenz_image))
     differenz_image += konstante
-    # TODO: Skalieren bei Aufgabe 1.1 und 2.6: Funktion schreiben?
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    # hoechster Wert: 255 ≙ weiß
-    weiß = 255
-    hoechster_grauwert = np.max(differenz_image)
-    # Berechnung Skalierungsfaktor, sodass hoechster Grauwert erfasst wird
-    skal = weiß / hoechster_grauwert
-    # Skalierungsfaktor auf gesamtes Szintigramm anwenden
-    differenz_image = skal * differenz_image
+    differenz_image = Aufgabe_1_1.make_scale(differenz_image)
     return differenz_image
 
 
@@ -71,19 +62,17 @@ def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
     # Plot Histogramm fuer Originalbild aus Aufgabe 1.1
-    Aufgabe_2_2.erstelle_grauwerthistogramm_abgeschnitten('Grauwerthistogramm',
-            'vom Originalbild aus Aufgabe 1.1, gekuerzte Ordinatenachse',
-            r'$f$', 'Häufigkeitsverteilung $h(f)$', szinti.flatten())
+    Aufgabe_2_2.erstelle_grauwerthist(szinti.flatten(),
+                                      "das Bild aus Aufgabe 1.1")
     # Erstellung Differenzbild
     differenz = differenzbild(szinti)
     # Plot Histogramm des Differenzbildes
-    Aufgabe_2_2.erstelle_grauwerthistogramm_abgeschnitten('Grauwerthistogramm',
-            'vom Differenzbild, gekuerzte Ordinatenachse',
-            r'$f$', 'Häufigkeitsverteilung $h(f)$', differenz.flatten())
+    Aufgabe_2_2.erstelle_grauwerthist(differenz.flatten(),
+                                      "das Differenzbild")
     # Berechnung mittlerer Informationsgehalt pro Pixel fuer das Originalbild
     info_original = Aufgabe_2_4.infogehalt(szinti)
-     # Berechnung mittlerer Informationsgehalt pro Pixel fuer das
-     # Differenzbild
+    # Berechnung mittlerer Informationsgehalt pro Pixel fuer das
+    # Differenzbild
     info_differenz = Aufgabe_2_4.infogehalt(differenz)
     # Gegenueberstellung der beiden Informationsgehalte in einer Tabelle
     vgl_infogehalt_differenz('Original', 'Differenz',
@@ -94,9 +83,6 @@ def main():
 if __name__ == "__main__":
     main()
     
-    np.rot90()
-    
-    # Ergebnisse vergleichen
     # Interpretation:
     # Differenz entspricht Kompression: eigentlich verlustfrei
     # das heißt Infogehalt muesste derselbe sein?
@@ -112,7 +98,6 @@ if __name__ == "__main__":
     # auf spitze Form des Histogramms eingehen:
     # viele relativ kleine/ mittlere Werte werden abgespeichert im
     # Differenzbild, keine hohen Farbwerte (da Differenzbildung)
-    
     # Infogehalt ist pro Pixel
     # bei Differenzbild ist zwischen einzelnen Pixeln eine mathematische
     # Abhaengigkeit, bei Originalbild sind Pixel voneinander unabhaengig.

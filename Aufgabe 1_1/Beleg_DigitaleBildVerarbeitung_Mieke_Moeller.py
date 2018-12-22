@@ -10,10 +10,12 @@
 # TODO: Fkt make.szinti() unnoetigerweise sehr oft aufgerufen?
 # TODO: immer rescaled?
 # TODO: Funktion in Windowskonsole schließt sich sofort?
+# TODO: Ergebnisse vergleichen
 
 import numpy as np
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
+import copy
 import numba
 import time
 
@@ -337,7 +339,7 @@ def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
 
 
 # TODO: ist relativ langsam. Numba?
-def erstelle_grauwerthist(werte):
+def erstelle_grauwerthist(werte, herkunft):
     """ Erstellung Grauwertprofil, Darstellung auf zwei Weisen:
         1. logarithmischer Skaleneinteilung,
         2. Zur besseren Darstellung kleinerer Werte ist Ordinatenachse bei
@@ -345,13 +347,16 @@ def erstelle_grauwerthist(werte):
 
         Parameter:
         ----------
-        werte: Array, Eingabewerte
+        werte: Array, Eingabewerte.
+        
+        herkunft: bezeichnet jenes Bild, welches zur Erstellung des Grauwert-
+        histogramms genutzt wird.
     """
-    ax1, ax2 = plot_vorbereitung_2sp("Grauwerthistogramm fuer das Bild " +
-                                     "aus Aufgabe 1.1", 'logarithmische Skala',
-                                     'gekuerzte Ordinatenachse', r'$f$',
-                                     'Häufigkeitsverteilung $h(f)$', r'$f$',
-                                     'Häufigkeitsverteilung $h(f)$')
+    ax1, ax2 = plot_vorbereitung_2sp(f'''Grauwerthistogramm fuer ''' +
+                    f'''{herkunft}''', 'logarithmische Skala',
+                    f'''gekuerzte Ordinatenachse''', r'$f$',
+                    f''''Häufigkeitsverteilung $h(f)$''', r'$f$',
+                    f'''Häufigkeitsverteilung $h(f)$''')
     ax1.hist(werte, bins=256, density=True, log=True)
     ordinate, _, _ = ax2.hist(werte, bins=256, density=True)
     # Ordinatenwerte sortieren
@@ -455,10 +460,12 @@ def erstellung_bitebenen(image):
     axs[0].set_title('Ursprungsbild')
     # einzelne Bitebenen erstellen
     ebene = []
+    # Kopie des Eingabe-Arrays, um Originalbild unveraendert zu lassen!
+    image_copy = copy.copy(image)
     for i in range(7, -1, -1):
-        bitebene = np.zeros((len(image), len(image)))
-        bitebene[image >= 2**(i)] = 1
-        image[image >= 2**(i)] -= 2**(i)
+        bitebene = np.zeros((len(image_copy), len(image_copy)))
+        bitebene[image_copy >= 2**(i)] = 1
+        image_copy[image_copy >= 2**(i)] -= 2**(i)
         ebene.append(bitebene)
     # Plots der einzelnen Bitebenen mit Unterueberschriften
     for i in range(7, -1, -1):
@@ -498,7 +505,52 @@ def infogehalt_einzelne_bitebenen(image):
         # Hinzufuegen einzelner Zeilen zur PrettyTable
         x.add_row([(i), info_bit[i]])
     print(x)
+    
 
+def differenzbild(image):
+    """ Funktion erstellt ein Differenzbild.
+        
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    differenz_image = np.zeros((len(image), len(image)))
+    # Berechnung nach Differenzverfahren entsprechend der Vorlesung,
+    # Folie 43f aus dem Modul MF-MRS_14 Digitale Bildverarbeitung
+    for x in range(len(image)):
+        for y in range(len(image)):
+            differenz_image[y, x] = image[y, x] - image[y, x-1]
+    # Addieren einer Konstanten auf alle Pixel, um negative Grauwerte zu
+    # vermeiden
+    konstante = np.absolute(np.amin(differenz_image))
+    differenz_image += konstante
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    differenz_image = make_scale(differenz_image)
+    return differenz_image
+
+
+def vgl_infogehalt_differenz(bild1, bild2, info1, info2):
+    """ Stellt den mittleren Informationsgehalt pro Pixel fuer 2 Bilder
+        in einer Tabelle vergleichend gegenueber.
+
+        Parameter:
+        ----------
+        bild1: Array, Eingabewerte fuer ein Bild1.
+        
+        bild2: Array, Eingabewerte fuer ein Bild2.
+        
+        info1: mittlerer Informationsgehalt je Pixel fuer ein Bild1.
+        
+        info2: mittlerer Informationsgehalt je Pixel fuer ein Bild2.
+    """
+    # Erstellung PrettyTable
+    x = PrettyTable()
+    x.field_names = ['Bild', 'mittlerer Informationsgehalt in ' +
+                     'Bit/Pixel']
+    x.add_row([bild1, info1])
+    x.add_row([bild2, info2])
+    print(x)        
+       
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
@@ -541,7 +593,7 @@ def aufgabe_2_2(szinti, pixel, pixel_quadrant):
     print("Aufgabe 2.2:")
     print("")
     # Grauwerthistogramm zeichnen:
-    erstelle_grauwerthist(szinti.flatten())
+    erstelle_grauwerthist(szinti.flatten(), "das Bild aus Aufgabe 1.1")
 
 
 def aufgabe_2_3(szinti, pixel, pixel_quadrant):
@@ -577,17 +629,75 @@ def aufgabe_2_4(szinti, pixel, pixel_quadrant):
           f'''{np.round(info, 3)} Bit/Pixel.''')
 
 
+# TODO:  Ergebnisse vergleichen
 def aufgabe_2_5(szinti, pixel, pixel_quadrant):
     """ Erstellt die Bitebenen aller Bilder aus Aufgabe 1.1 und berechnet fuer
         jede Ebene den mittleren Informationsgehalt je Pixel.
     """
     print("")
-    print("Aufgabe 2.4:")
+    print("Aufgabe 2.5:")
     print("")
     # Erstellung Bitebenen
     ebene = erstellung_bitebenen(szinti)
     # Berechnung mittlerer Informationsgehalt pro Pixel
     infogehalt_einzelne_bitebenen(ebene)
+    # Interpretation!!!
+    # einzelne Bitebenen entspricht Zahlencodierung
+    # es werden nur Farbkontraste wirklich sichtbar in oberen Bitebenen?
+    # in unteren Bitebenen nur Rauschen, keine Infos
+    # Arrays der einzelnen Bitebenen bestehen nur aus Einsen und Nullen:
+    # Nullen werden weggeschmissen
+    # daraus folgt Negativer Infogehalt? = sehr gering?
+    # wann besten Infogehalt:laut Bildern bei Bitebene 5, aber laut Tabelle
+    # größter Infogehalt bei Bitebene Null? 
+    # ist kein gutes Maß fuer Bitebenen,da Einsen und Nullen
+    # 7 ist relativ wichtig (most signifikant), unt. weiß / schwarz
+    # Histogramm enthaelt keine raumlichen Infos
+    
+
+# TODO: ist relativ langsam. Numba?
+def aufgabe_2_6(szinti, pixel, pixel_quadrant):
+    """ Berechnet aus Aufgabe 1.1 ein Differenzbild. Von diesem Differenzbild
+        wird ein Histogramm erzeugt sowie dessen mittlerer Informationsgehalt
+        ermittelt und dem Originalbild vergleichend gegenuebergestellt.
+    """
+    print("")
+    print("Aufgabe 2.6:")
+    print("")
+    # Plot Histogramm fuer Originalbild aus Aufgabe 1.1
+    erstelle_grauwerthist(szinti.flatten(), "das Bild aus Aufgabe 1.1")
+    # Erstellung Differenzbild
+    differenz = differenzbild(szinti)
+    # Plot Histogramm des Differenzbildes
+    erstelle_grauwerthist(differenz.flatten(), "das Differenzbild")
+    # Berechnung mittlerer Informationsgehalt pro Pixel fuer das Originalbild
+    info_original = infogehalt(szinti)
+    # Berechnung mittlerer Informationsgehalt pro Pixel fuer das
+    # Differenzbild
+    info_differenz = infogehalt(differenz)
+    # Gegenueberstellung der beiden Informationsgehalte in einer Tabelle
+    vgl_infogehalt_differenz('Original', 'Differenz',
+                             np.round(info_original, 3),
+                             np.round(info_differenz, 3))
+    # Interpretation!!!
+    # Differenz entspricht Kompression: eigentlich verlustfrei
+    # das heißt Infogehalt muesste derselbe sein?
+    # Eliminierung redundanter Bildinformationen
+    # Wiederherstellung des Originalbildes i.a. moeglich
+    # Sinn: durch Bildung der Differenz muessen nur noch kleine Zahlenwerte
+    # abgespeichert werden
+    # aber laut Tabelle: Differenzbild weißt weniger Infogehalt auf
+    # laut Formel: bei benachbarten Pixeln mit denselben Grauwerten
+    # ergibt sich als Differenz Null
+    # das heißt wirkliche Bildinformationen treten nur an Kanten/ starken
+    # Bildkontrasten auf
+    # auf spitze Form des Histogramms eingehen:
+    # viele relativ kleine/ mittlere Werte werden abgespeichert im
+    # Differenzbild, keine hohen Farbwerte (da Differenzbildung)
+    # Infogehalt ist pro Pixel
+    # bei Differenzbild ist zwischen einzelnen Pixeln eine mathematische
+    # Abhaengigkeit, bei Originalbild sind Pixel voneinander unabhaengig.
+    # das heißt PRO Pixel ist es bei Differenz niedriger
 
 
 def main():
@@ -606,6 +716,8 @@ def main():
     aufgabe_2_4(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.5
     aufgabe_2_5(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.6
+    aufgabe_2_6(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:
