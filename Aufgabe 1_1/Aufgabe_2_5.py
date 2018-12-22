@@ -12,9 +12,9 @@ import Aufgabe_1_1
 import Aufgabe_2_4
 
 
-def plot_vorbereitung(ueberschrift):
+def plot_vorbereitung_9sp(ueberschrift):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
-        Ueberschrift, einzelnen Subplots etc. """
+        Ueberschrift, neun Subplots etc. """
     # Erstellen von (neun) Subplots:
     fig, axs = plt.subplots(3, 3, figsize=(10, 10), facecolor='w')
     # Hinzufuegen der Ueberschrift zum Plot
@@ -24,20 +24,21 @@ def plot_vorbereitung(ueberschrift):
     return axs
 
 
+# TODO: Trennung von Berechnung und Plot?
 def erstellung_bitebenen(image):
-    """ Erstellt und plottet alle Bitebenen (des Bildes aus Aufgabe 1.1) sowie
+    """ Erstellt und plottet Bitebenen Null bis Sieben eines Bildes sowie
         das Ursprungsbild mit entsprechender Beschriftung.
         
         Parameter:
         ----------
         image: Array, Eingabewerte.
     """
-    axs = plot_vorbereitung('Der Informationsgehalt von Bildern \n'
-                            '- verschiedene Bitebenen -')
+    axs = plot_vorbereitung_9sp('Der Informationsgehalt von Bildern \n'
+                                '- verschiedene Bitebenen -')
 
     # Plot des Ursprungsbildes mit Unterueberschrift
     axs[0].imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
-    axs[0].set_title('Ursprungsbild aus Aufgabe 1.1')
+    axs[0].set_title('Ursprungsbild')
     # einzelne Bitebenen erstellen
     ebene = []
     for i in range(7, -1, -1):
@@ -49,16 +50,19 @@ def erstellung_bitebenen(image):
     for i in range(7, -1, -1):
         axs[i+1].set_title(f'''Bitebene {7-i}''')
         axs[i+1].imshow(ebene[i], cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
     return ebene
 
 
+# TODO: fuer das Bild aus Aufgabe 1.1 als Bezeichnung ok? 
+# (lieber {aufgabe} als Variable?)
 def infogehalt_einzelne_bitebenen(image):
     """ Berechnet fuer alle Bitebenen (des Bildes aus Aufgabe 1.1) den
          mittleren Informationsgehalt pro Pixel.
 
         Parameter:
         ----------
-        image: Liste??? TODO (ebene)
+        image: Liste der einzelnen Bitebenen, Eingabewerte.
     """
     info_bit = []
     for i in range(7, -1, -1):

@@ -9,10 +9,13 @@
 # TODO: Style Code Analysis bei Karl angucken
 # TODO: Fkt make.szinti() unnoetigerweise sehr oft aufgerufen?
 # TODO: immer rescaled?
-# TODO: Funktion in Windowskonsole?
+# TODO: Funktion in Windowskonsole schließt sich sofort?
 
 import numpy as np
 import matplotlib.pyplot as plt
+from prettytable import PrettyTable
+import numba
+import time
 
 
 def make_scale(image):
@@ -283,10 +286,10 @@ def extraktion_aus_array(array, y):
 
 
 # TODO: Achsenbeschriftungen doppelt?
-def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2,
-                      abszisse1, ordinate1, abszisse2, ordinate2):
+def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
+                          abszisse1, ordinate1, abszisse2, ordinate2):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
-        entsprechenden Ueberschriften, Achsenbeschriftung etc.
+        entsprechenden Ueberschriften, 2 Subplots, Achsenbeschriftung etc.
     """
     fig = plt.figure(figsize=(10, 5))
     # Hinzufuegen der Ueberschrift zum Plot
@@ -323,16 +326,17 @@ def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
 
         grauwerte1, grauwerte2: Grauwerte entlang bestimmter y- Linien.
     """
-    ax1, ax2 = plot_vorbereitung('Grauwertprofile fuer das Bild aus ' +
-                                 'Aufgabe 1.1', 'laengs y = 60',
-                                 'laengs y = -60', r'$x/mm$',
-                                 'Grauwert', r'$x/mm$',
-                                 'Grauwert')
+    ax1, ax2 = plot_vorbereitung_2sp('Grauwertprofile fuer das Bild aus ' +
+                                     'Aufgabe 1.1', 'laengs y = 60',
+                                     'laengs y = -60', r'$x/mm$',
+                                     'Grauwert', r'$x/mm$',
+                                     'Grauwert')
     ax1.plot(xwerte1, grauwerte1)
     ax2.plot(xwerte2, grauwerte2)
     plt.show()
 
 
+# TODO: ist relativ langsam. Numba?
 def erstelle_grauwerthist(werte):
     """ Erstellung Grauwertprofil, Darstellung auf zwei Weisen:
         1. logarithmischer Skaleneinteilung,
@@ -343,20 +347,17 @@ def erstelle_grauwerthist(werte):
         ----------
         werte: Array, Eingabewerte
     """
-    ax1, ax2 = plot_vorbereitung("Grauwerthistogramm fuer das Bild " +
-                                 "aus Aufgabe 1.1", 'logarithmische Skala',
-                                 'gekuerzte Ordinatenachse', r'$f$',
-                                 'Häufigkeitsverteilung $h(f)$', r'$f$',
-                                 'Häufigkeitsverteilung $h(f)$')
+    ax1, ax2 = plot_vorbereitung_2sp("Grauwerthistogramm fuer das Bild " +
+                                     "aus Aufgabe 1.1", 'logarithmische Skala',
+                                     'gekuerzte Ordinatenachse', r'$f$',
+                                     'Häufigkeitsverteilung $h(f)$', r'$f$',
+                                     'Häufigkeitsverteilung $h(f)$')
     ax1.hist(werte, bins=256, density=True, log=True)
     ordinate, _, _ = ax2.hist(werte, bins=256, density=True)
     # Ordinatenwerte sortieren
     ordinate_sort = np.sort(ordinate)
     # Ordinatenachse kuerzen
     plt.ylim(0, ordinate_sort[-2] * 1.1)
-    # Position der Subplots untereinander veraendern:
-    # vertikalen Abstand vergroeßern
-    plt.subplots_adjust(wspace=0.3)
     plt.show()
 
 
@@ -404,25 +405,123 @@ def schiefe_grauwerthist(ordinate, abszisse, mittel):
           f'''betraegt {np.round(schiefe, 3)}.''')
 
 
-def aufgabe_1_1():
+def infogehalt(image):
+    """ Berechnet den mittleren Informationsgehalt pro Pixel fuer ein
+        Bild.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    # Histogrammverteilung (Ordinatenwerte des Histogramms) erstellen
+    haufigkeiten, _ = np.histogram(image, bins=256)
+    # Darstellung der relativen Haeufigkeitsverteilung
+    # durch Normierung mit Anzahl der Bildpunkte
+    haufigkeiten = haufigkeiten / np.sum(haufigkeiten)
+    # Nullen aus relativer Histogrammverteilung entfernen
+    haufigkeiten = haufigkeiten[haufigkeiten != 0]
+    # Berechnung des Informationsgehaltes je Pixel entsprechend der Vorlesung,
+    # Folie 39 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung
+    info = np.sum(-haufigkeiten * np.log2(haufigkeiten))
+    return info
+
+
+def plot_vorbereitung_9sp(ueberschrift):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
+        Ueberschrift, neun Subplots etc. """
+    # Erstellen von (neun) Subplots:
+    fig, axs = plt.subplots(3, 3, figsize=(10, 10), facecolor='w')
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    fig.subplots_adjust(hspace=0.5, wspace=0.5)
+    axs = axs.ravel()
+    return axs
+
+
+# TODO: Trennung von Berechnung und Plot?
+def erstellung_bitebenen(image):
+    """ Erstellt und plottet Bitebenen Null bis Sieben eines Bildes sowie
+        das Ursprungsbild mit entsprechender Beschriftung.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    axs = plot_vorbereitung_9sp('Der Informationsgehalt von Bildern \n'
+                                '- verschiedene Bitebenen -')
+
+    # Plot des Ursprungsbildes mit Unterueberschrift
+    axs[0].imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
+    axs[0].set_title('Ursprungsbild')
+    # einzelne Bitebenen erstellen
+    ebene = []
+    for i in range(7, -1, -1):
+        bitebene = np.zeros((len(image), len(image)))
+        bitebene[image >= 2**(i)] = 1
+        image[image >= 2**(i)] -= 2**(i)
+        ebene.append(bitebene)
+    # Plots der einzelnen Bitebenen mit Unterueberschriften
+    for i in range(7, -1, -1):
+        axs[i+1].set_title(f'''Bitebene {7-i}''')
+        axs[i+1].imshow(ebene[i], cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
+    return ebene
+
+
+# TODO: fuer das Bild aus Aufgabe 1.1 als Bezeichnung ok?
+# (lieber {aufgabe} als Variable?)
+def infogehalt_einzelne_bitebenen(image):
+    """ Berechnet fuer alle Bitebenen (des Bildes aus Aufgabe 1.1) den
+         mittleren Informationsgehalt pro Pixel.
+
+        Parameter:
+        ----------
+        image: Liste der einzelnen Bitebenen, Eingabewerte.
+    """
+    info_bit = []
+    for i in range(7, -1, -1):
+        info = infogehalt(image[i])
+        # Runden des Informationsgehaltes
+        info = np.round(info, 3)
+        # Abspeichern des Informationsgehaltes der einzelnen Bitebenen:
+        # Anhaengen an eine Liste
+        info_bit.append(info)
+    # Ausgabe des Informationsgehaltes pro Pixel fuer die einzelnen
+    # Bitebenen des Bildes aus Aufgabe 1.1 mit PrettyTable
+    print('Der mittlere Informationsgehalt pro Pixel fuer das Bild aus ' +
+          'Aufgabe 1.1 betraegt:')
+    # Erstellung PrettyTable
+    x = PrettyTable()
+    x.field_names = ['Bitebene', 'mittlerer Informationsgehalt in ' +
+                     'Bit/Pixel']
+    for i in range(8):
+        # Hinzufuegen einzelner Zeilen zur PrettyTable
+        x.add_row([(i), info_bit[i]])
+    print(x)
+
+
+def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
         Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
         Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung)
     """
-    szinti, pixel, pixel_quadrant = make_szinti()
+    print("")
+    print("Aufgabe 1.1:")
+    print("")
     # Szintigramm als Plot zeichnen
     plt.figure()
     plt.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
 
 
-def aufgabe_2_1():
+def aufgabe_2_1(szinti, pixel, pixel_quadrant):
     """
         Erstellt die Grauwertprofile fuer das Bild aus Aufgabe 1.1 laengs der
         Linien y = 60 mm und y = -60 mm.
     """
-    # Bild- Array (aus Aufgabe 1.1) erstellen
-    szinti, pixel, pixel_quadrant = make_szinti()
+    print("")
+    print("Aufgabe 2.1:")
+    print("")
     # Extrahieren Grauwerte entlang von bestimmten y- Linien
     # (siehe Aufgabenstellung):
     # laengs y = 60, mit Umrechnung globales/lokales Koordinatensystem
@@ -435,21 +534,23 @@ def aufgabe_2_1():
              grauwertprofil_minus60)
 
 
-def aufgabe_2_2():
+def aufgabe_2_2(szinti, pixel, pixel_quadrant):
     """ Erstellt das Grauwerthistogramm des Bildes aus Aufgabe 1.1 und stellt
         es graphisch dar. """
-    # Bild- Array (aus Aufgabe 1.1) erstellen
-    szinti, pixel, pixel_quadrant = make_szinti()
+    print("")
+    print("Aufgabe 2.2:")
+    print("")
     # Grauwerthistogramm zeichnen:
     erstelle_grauwerthist(szinti.flatten())
- 
- 
-def aufgabe_2_3():
+
+
+def aufgabe_2_3(szinti, pixel, pixel_quadrant):
     """ Berechnet Mittelwert und Schiefe des Grauwert-Histogramms aus Aufgabe
         2.2.
     """
-    # Bild- Array (aus Aufgabe 1.1) erstellen
-    szinti, pixel, pixel_quadrant = make_szinti()
+    print("")
+    print("Aufgabe 2.3:")
+    print("")
     # relative Histogrammverteilung aus dem Bild aus Aufgabe 1.1
     # (Ordinatenwerte des Grauwerthistogramms) erstellen
     haufigkeit, _ = np.histogram(szinti, bins=256, density=True)
@@ -461,15 +562,58 @@ def aufgabe_2_3():
     schiefe_grauwerthist(haufigkeit, grauwerte, avg_hist)
 
 
+def aufgabe_2_4(szinti, pixel, pixel_quadrant):
+    """ Berechnet den mittleren Informationsgehalt pro Pixel fuer das Bild aus
+        Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 2.4:")
+    print("")
+    # Informationsgehalt pro Pixel berechnen
+    info = infogehalt(szinti)
+    # Ausgabe des Informationsgehaltes pro Pixel fuer das Bild aus Aufgabe 1.1
+    print(f'''Der mittlere Informationsgehalt pro ''' +
+          f'''Pixel fuer das Bild aus Aufgabe 1.1 betraegt ''' +
+          f'''{np.round(info, 3)} Bit/Pixel.''')
+
+
+def aufgabe_2_5(szinti, pixel, pixel_quadrant):
+    """ Erstellt die Bitebenen aller Bilder aus Aufgabe 1.1 und berechnet fuer
+        jede Ebene den mittleren Informationsgehalt je Pixel.
+    """
+    print("")
+    print("Aufgabe 2.4:")
+    print("")
+    # Erstellung Bitebenen
+    ebene = erstellung_bitebenen(szinti)
+    # Berechnung mittlerer Informationsgehalt pro Pixel
+    infogehalt_einzelne_bitebenen(ebene)
+
+
 def main():
+    # Szintigramm (beschrieben in Vorlesung zu Modul MF-MRS_14 Digitale
+    # Bildverarbeitung, siehe Folie 17)  erstellen
+    szinti, pixel, pixel_quadrant = make_szinti()
     # Aufruf Aufgabe 1.1
-    aufgabe_1_1()
+    aufgabe_1_1(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.1
-    aufgabe_2_1()
+    aufgabe_2_1(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.2
-    aufgabe_2_2()
+    aufgabe_2_2(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.3
-    aufgabe_2_3()
+    aufgabe_2_3(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.4
+    aufgabe_2_4(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.5
+    aufgabe_2_5(szinti, pixel, pixel_quadrant)
+
+#    # Zeit messen:
+#    # fuer Zeitmessung:
+#    t1 = time.time()
+#    # fuer Zeitmessung:
+#    t2 = time.time()
+#    # Ausgabe Zeitanspruch des Programms
+#    print("Die Zeit dieses Programmes lautet:", t2 - t1)
 
 
 if __name__ == "__main__":

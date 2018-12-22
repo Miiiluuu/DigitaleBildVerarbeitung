@@ -2,6 +2,8 @@
     Aufgabe 2.4:
     Berechnet den mittleren Informationsgehalt pro Pixel fuer das Bild aus
     Aufgabe 1.1.
+    
+    @author: Mieke Möller
 """
 
 import numpy as np
@@ -17,15 +19,16 @@ def infogehalt(image):
         ----------
         image: Array, Eingabewerte.
     """
-    # relative Histogrammverteilung (Ordinatenwerte des Histogramms) erstellen
-    haufigkeitsverteilung, _ = np.histogram(image, bins=256)
-    # Normierung mit Anzahl der Bildpunkte (TODO)
-    haufigkeitsverteilung = haufigkeitsverteilung / np.sum(haufigkeitsverteilung)
+    # Histogrammverteilung (Ordinatenwerte des Histogramms) erstellen
+    haufigkeiten, _ = np.histogram(image, bins=256)
+    # Darstellung der relativen Haeufigkeitsverteilung
+    # durch Normierung mit Anzahl der Bildpunkte
+    haufigkeiten = haufigkeiten / np.sum(haufigkeiten)
     # Nullen aus relativer Histogrammverteilung entfernen
-    haufigkeitsverteilung = haufigkeitsverteilung[haufigkeitsverteilung != 0]
+    haufigkeiten = haufigkeiten[haufigkeiten != 0]
     # Berechnung des Informationsgehaltes je Pixel entsprechend der Vorlesung,
     # Folie 39 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung
-    info = np.sum(-haufigkeitsverteilung * np.log2(haufigkeitsverteilung))
+    info = np.sum(-haufigkeiten * np.log2(haufigkeiten))
     return info
 
 
