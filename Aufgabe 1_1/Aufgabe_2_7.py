@@ -2,6 +2,8 @@
     Aufgabe 2.7:
     Berechnet 2D Fouriertransformierte und das Leistungsspektrum des Bildes
     aus Aufgabe 1.1
+
+    @author: Mieke Möller
 """
 
 import numpy as np
@@ -9,8 +11,6 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 import Aufgabe_1_1
-
-# TODO: Achsenbeschriftungen!
 
 
 def calculate_fourier(image):
@@ -71,6 +71,25 @@ def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2,
     plt.tight_layout(rect=[0, 0.03, 1, 1.5])
     return ax1, ax2, ax3
 
+def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
+                      unterueberschrift3, abszisse, ordinate):
+    # Erstellen von (neun) Subplots:
+    fig, axs = plt.subplots(1, 3, figsize=(10, 10), facecolor='w')
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    # TODO: Schleife??
+    # Unterueberschriften der Subplots
+    axs[0].set_title(unterueberschrift1)
+    axs[1].set_title(unterueberschrift2)
+    axs[2].set_title(unterueberschrift3)
+    fig.subplots_adjust(hspace=0.5, wspace=0.5)
+    # Achsenbeschriftungen
+    for i in range(3):
+        axs[i].set_xlabel(abszisse)
+        axs[i].set_ylabel(ordinate)
+    axs = axs.ravel()
+    return axs
+
 
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
@@ -78,29 +97,30 @@ def main():
     # Fouriertransformation
     fourier_image, power, amplitude, phase = calculate_fourier(szinti)
     # Plots:
-    ax1, ax2, ax3 = plot_vorbereitung('Fouriertransformation des Bildes ' +
+    axs = plot_vorbereitung_3sp('Fouriertransformation des Bildes ' +
                                       'aus Aufgabe 1.1', 'Leistungsspektrum',
                                       'Amplitudenbild', 'Phasenbild',
                                       '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$')
     # Leistungsspektrum
-    ax1.imshow(power, cmap='gray', norm=LogNorm(),
+    axs[0].imshow(power, cmap='gray', norm=LogNorm(),
                extent=[-0.5, 0.5, -0.5, 0.5])
     ticks = np.linspace(-0.5, 0.5, 11)
-    ax1.set_xticks(ticks)
-    ax1.set_yticks(ticks)
-    ax1.set_xticklabels(ticks, rotation=75)
+    axs[0].set_xticks(ticks)
+    axs[0].set_yticks(ticks)
+    axs[0].set_xticklabels(ticks, rotation=75)
     # Amplitudenbild
-    ax2.imshow(amplitude, cmap='gray', norm=LogNorm(),
+    axs[1].imshow(amplitude, cmap='gray', norm=LogNorm(),
                extent=[-0.5, 0.5, -0.5, 0.5])
-    ax2.set_xticks(ticks)
-    ax2.set_yticks(ticks)
-    ax2.set_xticklabels(ticks, rotation=75)
+    axs[1].set_xticks(ticks)
+    axs[1].set_yticks(ticks)
+    axs[1].set_xticklabels(ticks, rotation=75)
     # Phasenbild
-    ax3.imshow(phase, cmap='gray', norm=LogNorm(),
+    axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
                extent=[-0.5, 0.5, -0.5, 0.5])
-    ax3.set_xticks(ticks)
-    ax3.set_yticks(ticks)
-    ax3.set_xticklabels(ticks, rotation=75)
+    axs[2].set_xticks(ticks)
+    axs[2].set_yticks(ticks)
+    axs[2].set_xticklabels(ticks, rotation=75)
+    plt.show()
 
 
 if __name__ == "__main__":
