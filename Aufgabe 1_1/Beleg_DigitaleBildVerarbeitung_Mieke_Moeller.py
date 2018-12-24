@@ -16,6 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
 import copy
+from matplotlib.colors import LogNorm
 import numba
 import time
 
@@ -287,6 +288,7 @@ def extraktion_aus_array(array, y):
     return teil_array
 
 
+# TODO: plot_vorbereitungen 2, 3 oder 9 Subplots in einer Fkt?
 # TODO: Achsenbeschriftungen doppelt?
 def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
                           abszisse1, ordinate1, abszisse2, ordinate2):
@@ -318,7 +320,8 @@ def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     return ax1, ax2
 
 
-def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
+# TODO: sehr speziell bezeichnete Fkt. Bloed?
+def plot_profile(xwerte1, grauwerte1, xwerte2, grauwerte2):
     """ Stellt Grauwertprofile fuer das Bild aus Aufgabe 1.1. längs
         bestimmter y- Linien dar.
 
@@ -549,7 +552,91 @@ def vgl_infogehalt_differenz(bild1, bild2, info1, info2):
                      'Bit/Pixel']
     x.add_row([bild1, info1])
     x.add_row([bild2, info2])
-    print(x)        
+    print(x)
+
+
+def calculate_fourier(image):
+    """ Ermittelt die 2D-dimensionale (diskrete) Fouriertransformierte sowie
+        weitere Parameter (z.B. Leistungsspektrum, Amplituden- und Phasenbild
+        etc., entsprechend der Vorlesung, Folie 78 aus dem Modul MF-MRS_14
+        Digitale Bildverarbeitung).
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    # 2D-Fouriertransformation
+    fourier_image = np.fft.fft2(image)
+    fourier_image = np.fft.fftshift(fourier_image)
+    # Berechnung Imaginär- und Realteil der Fouriertransformierten
+    imag = np.imag(fourier_image)
+    real = np.real(fourier_image)
+    # Ermittlung des Phasenbildes
+    phase = np.arctan(imag / real)
+    # Ermittlung des Leistungsspektrums
+    power = real**2 + imag**2
+    # Ermittlung des Amplitudenbildes
+    amplitude = np.sqrt(power)
+    return fourier_image, power, amplitude, phase
+
+
+# TODO: warum ist Ueberschrift so weit oben?
+def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
+                          unterueberschrift3, abszisse, ordinate):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
+        drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
+    """
+    # Erstellen von (drei) Subplots:
+    fig, axs = plt.subplots(1, 3, figsize=(10, 10), facecolor='w')
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    axs = axs.ravel()
+    # TODO: Schleife??
+    # Unterueberschriften der Subplots
+    axs[0].set_title(unterueberschrift1)
+    axs[1].set_title(unterueberschrift2)
+    axs[2].set_title(unterueberschrift3)
+    fig.subplots_adjust(hspace=0.5, wspace=0.5)
+    # Achsenbeschriftungen und Grid
+    ticks = np.linspace(-0.5, 0.5, 11)
+    for i in range(3):
+        axs[i].set_xlabel(abszisse)
+        axs[i].set_ylabel(ordinate)
+        axs[i].set_xticks(ticks)
+        axs[i].set_yticks(ticks)
+        axs[i].set_xticklabels(ticks, rotation=75)
+    return axs
+
+
+def plot_fourier(power, amplitude, phase, herkunft):
+    """"Darstellung des Leistungsspektrums, Phasen- und Amplitudenbild einer
+        2D-Fouriertransformierten.
+
+        Parameter:
+        ----------
+        herkunft: bezeichnet jenes Bild, welches zur Erstellung des Plottes
+        genutzt wird.
+
+        power: Leistungsspektrum einer 2D-Fouriertransformierten.
+
+        amplitude: Amplitudenspektrum einer 2D-Fouriertransformierten.
+
+        phase: Phasenbild einer 2D-Fouriertransformierten.
+    """
+    axs = plot_vorbereitung_3sp(f'''Fouriertransformation {herkunft}''',
+                                'Leistungsspektrum',
+                                'Amplitudenbild', 'Phasenbild',
+                                '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$')
+    # Leistungsspektrum
+    axs[0].imshow(power, cmap='gray', norm=LogNorm(),
+                  extent=[-0.5, 0.5, -0.5, 0.5])
+    # Amplitudenbild
+    axs[1].imshow(amplitude, cmap='gray', norm=LogNorm(),
+                  extent=[-0.5, 0.5, -0.5, 0.5])
+    # Phasenbild
+    axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
+                  extent=[-0.5, 0.5, -0.5, 0.5])
+    plt.show()
        
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
@@ -581,9 +668,9 @@ def aufgabe_2_1(szinti, pixel, pixel_quadrant):
     # laengs y = -60, mit Umrechnung globales/lokales Koordinatensystem
     grauwertprofil_minus60 = extraktion_aus_array(szinti, pixel_quadrant + 60)
     # Plots: Erstellung Grauwertprofile
-    plot_2_1(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60,
-             np.arange(-pixel_quadrant, pixel_quadrant),
-             grauwertprofil_minus60)
+    plot_profile(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60,
+                 np.arange(-pixel_quadrant, pixel_quadrant),
+                 grauwertprofil_minus60)
 
 
 def aufgabe_2_2(szinti, pixel, pixel_quadrant):
@@ -698,6 +785,20 @@ def aufgabe_2_6(szinti, pixel, pixel_quadrant):
     # bei Differenzbild ist zwischen einzelnen Pixeln eine mathematische
     # Abhaengigkeit, bei Originalbild sind Pixel voneinander unabhaengig.
     # das heißt PRO Pixel ist es bei Differenz niedriger
+    
+
+def aufgabe_2_7(szinti, pixel, pixel_quadrant):
+    """ Berechnet 2D Fouriertransformierte und das Leistungsspektrum des
+        Bildes aus Aufgabe 1.1:
+    """
+    # Fouriertransformation
+    fourier_image, power, amplitude, phase = calculate_fourier(szinti)
+    # graphische Darstellung der Fouriertransformierten
+    plot_fourier(power, amplitude, phase, "des Bildes aus Aufgabe 1.1")  
+    # Interpretation!!!
+    # Phasenbild codiert raeumliche Info
+    # Linien entsprechen Aenderungen in Grauwerten / Farbspruenge / Kanten
+    # gar keine Linien hier? keine Farbaenderungen?
 
 
 def main():
@@ -718,6 +819,8 @@ def main():
     aufgabe_2_5(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.6
     aufgabe_2_6(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.7
+    aufgabe_2_7(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:

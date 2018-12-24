@@ -38,57 +38,64 @@ def calculate_fourier(image):
     return fourier_image, power, amplitude, phase
 
 
-def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2,
-                      unterueberschrift3, abszisse, ordinate):
-    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
-        entsprechenden Subplots, Ueberschriften etc.
-    """
-    fig = plt.figure(figsize=(10, 11))
-    # Hinzufuegen der Ueberschrift zum Plot
-    fig.suptitle(ueberschrift, fontsize=16)
-    # erster Subplot
-    ax1 = fig.add_subplot(131)
-    # Hinzufuegen einer Unterueberschrift
-    plt.title(unterueberschrift1)
-    # Achsenbeschriftungen
-    plt.xlabel(abszisse)
-    plt.ylabel(ordinate)
-    # zweiter Subplot
-    ax2 = fig.add_subplot(132)
-    # Hinzufuegen einer Unterueberschrift
-    plt.title(unterueberschrift2)
-    # Achsenbeschriftungen
-    plt.xlabel(abszisse)
-    plt.ylabel(ordinate)
-    # dritter Subplot
-    ax3 = fig.add_subplot(133)
-    # Hinzufuegen einer Unterueberschrift
-    plt.title(unterueberschrift3)
-    # Achsenbeschriftungen
-    plt.xlabel(abszisse)
-    plt.ylabel(ordinate)
-    # Ueberlappungen vermeiden
-    plt.tight_layout(rect=[0, 0.03, 1, 1.5])
-    return ax1, ax2, ax3
-
+# TODO: plot_vorbereitungen 2, 3 oder 9 Subplots in einer Fkt?
+# TODO: warum ist Ueberschrift so weit oben?
 def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
-                      unterueberschrift3, abszisse, ordinate):
-    # Erstellen von (neun) Subplots:
+                          unterueberschrift3, abszisse, ordinate):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
+        drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
+    """
+    # Erstellen von (drei) Subplots:
     fig, axs = plt.subplots(1, 3, figsize=(10, 10), facecolor='w')
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
+    axs = axs.ravel()
     # TODO: Schleife??
     # Unterueberschriften der Subplots
     axs[0].set_title(unterueberschrift1)
     axs[1].set_title(unterueberschrift2)
     axs[2].set_title(unterueberschrift3)
     fig.subplots_adjust(hspace=0.5, wspace=0.5)
-    # Achsenbeschriftungen
+    # Achsenbeschriftungen und Grid
+    ticks = np.linspace(-0.5, 0.5, 11)
     for i in range(3):
         axs[i].set_xlabel(abszisse)
         axs[i].set_ylabel(ordinate)
-    axs = axs.ravel()
+        axs[i].set_xticks(ticks)
+        axs[i].set_yticks(ticks)
+        axs[i].set_xticklabels(ticks, rotation=75)
     return axs
+
+
+def plot_fourier(power, amplitude, phase, herkunft):
+    """"Darstellung des Leistungsspektrums, Phasen- und Amplitudenbild einer
+        2D-Fouriertransformierten.
+
+        Parameter:
+        ----------
+        herkunft: bezeichnet jenes Bild, welches zur Erstellung des Plottes
+        genutzt wird.
+
+        power: Leistungsspektrum einer 2D-Fouriertransformierten.
+
+        amplitude: Amplitudenspektrum einer 2D-Fouriertransformierten.
+
+        phase: Phasenbild einer 2D-Fouriertransformierten.
+    """
+    axs = plot_vorbereitung_3sp(f'''Fouriertransformation {herkunft}''',
+                                'Leistungsspektrum',
+                                'Amplitudenbild', 'Phasenbild',
+                                '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$')
+    # Leistungsspektrum
+    axs[0].imshow(power, cmap='gray', norm=LogNorm(),
+                  extent=[-0.5, 0.5, -0.5, 0.5])
+    # Amplitudenbild
+    axs[1].imshow(amplitude, cmap='gray', norm=LogNorm(),
+                  extent=[-0.5, 0.5, -0.5, 0.5])
+    # Phasenbild
+    axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
+                  extent=[-0.5, 0.5, -0.5, 0.5])
+    plt.show()
 
 
 def main():
@@ -96,31 +103,8 @@ def main():
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
     # Fouriertransformation
     fourier_image, power, amplitude, phase = calculate_fourier(szinti)
-    # Plots:
-    axs = plot_vorbereitung_3sp('Fouriertransformation des Bildes ' +
-                                      'aus Aufgabe 1.1', 'Leistungsspektrum',
-                                      'Amplitudenbild', 'Phasenbild',
-                                      '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$')
-    # Leistungsspektrum
-    axs[0].imshow(power, cmap='gray', norm=LogNorm(),
-               extent=[-0.5, 0.5, -0.5, 0.5])
-    ticks = np.linspace(-0.5, 0.5, 11)
-    axs[0].set_xticks(ticks)
-    axs[0].set_yticks(ticks)
-    axs[0].set_xticklabels(ticks, rotation=75)
-    # Amplitudenbild
-    axs[1].imshow(amplitude, cmap='gray', norm=LogNorm(),
-               extent=[-0.5, 0.5, -0.5, 0.5])
-    axs[1].set_xticks(ticks)
-    axs[1].set_yticks(ticks)
-    axs[1].set_xticklabels(ticks, rotation=75)
-    # Phasenbild
-    axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
-               extent=[-0.5, 0.5, -0.5, 0.5])
-    axs[2].set_xticks(ticks)
-    axs[2].set_yticks(ticks)
-    axs[2].set_xticklabels(ticks, rotation=75)
-    plt.show()
+    # graphische Darstellung der Fouriertransformierten
+    plot_fourier(power, amplitude, phase, "des Bildes aus Aufgabe 1.1")
 
 
 if __name__ == "__main__":
