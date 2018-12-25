@@ -28,7 +28,7 @@ def extraktion_aus_array(array, y):
 
 
 def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
-                          abszisse1, ordinate1, abszisse2, ordinate2):
+                          abszisse='', ordinate='', ticks=False):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         entsprechenden Ueberschriften, Achsenbeschriftung etc.
     """
@@ -40,20 +40,29 @@ def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     # Hinzufuegen einer Unterueberschrift
     plt.title(unterueberschrift1)
     # Achsenbeschriftungen
-    plt.xlabel(abszisse1)
-    plt.ylabel(ordinate1)
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
     # zweiter Subplot
     ax2 = fig.add_subplot(122)
     # Hinzufuegen einer Unterueberschrift
     plt.title(unterueberschrift2)
     # Achsenbeschriftungen
-    plt.xlabel(abszisse2)
-    plt.ylabel(ordinate2)
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
     # Ueberlappungen vermeiden
     plt.tight_layout(rect=[0, 0.03, 1, 0.9])
     # Position der Subplots untereinander veraendern:
     # vertikalen Abstand vergroeßern
     plt.subplots_adjust(wspace=0.3)
+    # bei Bedarf Achsenbeschriftung mit Grid
+    if ticks:
+        ticks = np.linspace(-0.5, 0.5, 11)
+        ax1.set_xticks(ticks)
+        ax1.set_yticks(ticks)
+        ax1.set_xticklabels(ticks, rotation=75)
+        ax2.set_xticks(ticks)
+        ax2.set_yticks(ticks)
+        ax2.set_xticklabels(ticks, rotation=75)
     return ax1, ax2
 
 
@@ -70,7 +79,6 @@ def plot_2_1(xwerte1, grauwerte1, xwerte2, grauwerte2):
     ax1, ax2 = plot_vorbereitung_2sp('Grauwertprofile fuer das Bild aus ' +
                                  'Aufgabe 1.1', 'laengs y = 60',
                                  'laengs y = -60', r'$x/mm$',
-                                 'Grauwert', r'$x/mm$',
                                  'Grauwert')
     ax1.plot(xwerte1, grauwerte1)
     ax2.plot(xwerte2, grauwerte2)

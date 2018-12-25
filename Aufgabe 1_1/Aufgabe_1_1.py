@@ -236,6 +236,7 @@ def make_szinti():
     pixel = 256
     # Anzahl an Pixeln der Teilbilder (Flaechenquelle A, B, C und D, fuer
     # Erstellen (lokaler) Koordinatensysteme)
+    # ≙ Mitte des globalen Koordinatensystems TODO: nicht immer?
     pixel_quadrant = pixel // 2
     # Erstellung Szintigramm = 256x256- Array
     # (Szintigramm-Flaeche ≙ globales Koordinatensystem)

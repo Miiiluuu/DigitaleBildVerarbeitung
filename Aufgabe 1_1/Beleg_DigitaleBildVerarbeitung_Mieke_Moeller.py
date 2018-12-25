@@ -11,6 +11,8 @@
 # TODO: immer rescaled?
 # TODO: Funktion in Windowskonsole schließt sich sofort?
 # TODO: Ergebnisse vergleichen
+# TODO: Fkt unnoetigerweise doppelt aufgerufen?
+# TODO: welche Fkt sind wirklich nuetzlich?
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -246,6 +248,7 @@ def make_szinti():
     pixel = 256
     # Anzahl an Pixeln der Teilbilder (Flaechenquelle A, B, C und D, fuer
     # Erstellen (lokaler) Koordinatensysteme)
+    # ≙ Mitte des globalen Koordinatensystems TODO: nicht immer?
     pixel_quadrant = pixel // 2
     # Erstellung Szintigramm = 256x256- Array
     # (Szintigramm-Flaeche ≙ globales Koordinatensystem)
@@ -289,9 +292,8 @@ def extraktion_aus_array(array, y):
 
 
 # TODO: plot_vorbereitungen 2, 3 oder 9 Subplots in einer Fkt?
-# TODO: Achsenbeschriftungen doppelt?
 def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
-                          abszisse1, ordinate1, abszisse2, ordinate2):
+                          abszisse='', ordinate='', ticks=False):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         entsprechenden Ueberschriften, 2 Subplots, Achsenbeschriftung etc.
     """
@@ -303,20 +305,29 @@ def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     # Hinzufuegen einer Unterueberschrift
     plt.title(unterueberschrift1)
     # Achsenbeschriftungen
-    plt.xlabel(abszisse1)
-    plt.ylabel(ordinate1)
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
     # zweiter Subplot
     ax2 = fig.add_subplot(122)
     # Hinzufuegen einer Unterueberschrift
     plt.title(unterueberschrift2)
     # Achsenbeschriftungen
-    plt.xlabel(abszisse2)
-    plt.ylabel(ordinate2)
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
     # Ueberlappungen vermeiden
     plt.tight_layout(rect=[0, 0.03, 1, 0.9])
     # Position der Subplots untereinander veraendern:
     # vertikalen Abstand vergroeßern
     plt.subplots_adjust(wspace=0.3)
+    # bei Bedarf Achsenbeschriftung mit Grid
+    if ticks:
+        ticks = np.linspace(-0.5, 0.5, 11)
+        ax1.set_xticks(ticks)
+        ax1.set_yticks(ticks)
+        ax1.set_xticklabels(ticks, rotation=75)
+        ax2.set_xticks(ticks)
+        ax2.set_yticks(ticks)
+        ax2.set_xticklabels(ticks, rotation=75)
     return ax1, ax2
 
 
@@ -334,7 +345,6 @@ def plot_profile(xwerte1, grauwerte1, xwerte2, grauwerte2):
     ax1, ax2 = plot_vorbereitung_2sp('Grauwertprofile fuer das Bild aus ' +
                                      'Aufgabe 1.1', 'laengs y = 60',
                                      'laengs y = -60', r'$x/mm$',
-                                     'Grauwert', r'$x/mm$',
                                      'Grauwert')
     ax1.plot(xwerte1, grauwerte1)
     ax2.plot(xwerte2, grauwerte2)
@@ -358,8 +368,7 @@ def erstelle_grauwerthist(werte, herkunft):
     ax1, ax2 = plot_vorbereitung_2sp(f'''Grauwerthistogramm fuer ''' +
                     f'''{herkunft}''', 'logarithmische Skala',
                     f'''gekuerzte Ordinatenachse''', r'$f$',
-                    f''''Häufigkeitsverteilung $h(f)$''', r'$f$',
-                    f'''Häufigkeitsverteilung $h(f)$''')
+                    f''''Häufigkeitsverteilung $h(f)$''')
     ax1.hist(werte, bins=256, density=True, log=True)
     ordinate, _, _ = ax2.hist(werte, bins=256, density=True)
     # Ordinatenwerte sortieren
@@ -608,6 +617,7 @@ def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     return axs
 
 
+# TODO: Fkt unsinnig da nur einmal verwendet?
 def plot_fourier(power, amplitude, phase, herkunft):
     """"Darstellung des Leistungsspektrums, Phasen- und Amplitudenbild einer
         2D-Fouriertransformierten.
@@ -637,6 +647,70 @@ def plot_fourier(power, amplitude, phase, herkunft):
     axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
                   extent=[-0.5, 0.5, -0.5, 0.5])
     plt.show()
+    
+    
+def drehmatrix(grad):
+    """ Drehung eines Bildes in positivem Drehsinne (siehe Vorlesung,
+        Folie 88, 131 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung).
+
+        Parameter:
+        ----------
+        grad: Angabe der Drehung in Grad (im positivem Drehsinne), in Einheit
+        Grad.
+    """
+    # Umrechnung Winkel in Bogenmaß
+    grad_rad = np.radians(grad)
+    # Drehmatrix in homogenen Koordinaten
+    dreh = np.array([[np.cos(grad_rad), np.sin(grad_rad), 0],
+                     [-np.sin(grad_rad), np.cos(grad_rad), 0], [0, 0, 1]])
+    # Drehmatrix invertieren, da Transformation im positiven Sinn
+    dreh = np.linalg.inv(dreh)
+    return dreh
+
+
+# TODO: Grauwertappromimation!
+def transformation(image, pixel_mitte, transform):
+    """ Transformation eines Bildes in positivem Drehsinne (siehe Vorlesung,
+        Folie 88, 131 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung).
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
+        TODO: nicht immer perfekt eingehalten?
+        
+        transform: Transformationsmatrix, die Transformation eines Bildes
+        durchfuehrt.
+    """
+    image_transform = np.zeros_like(image)
+    # Schleife:
+    # jeden Pixel einzeln durchgehen, auf diesem Drehmatrix anwenden
+    # und neue rotierte Koordinaten berechnen
+    # Rotation mit Drehmatrix bezieht sich auf Nullpunkt des Koordinatensystems
+    # das heißt fuer eine Drehung um die Mitte des Bildes muss der Nullpunkt
+    # des Koordinatensystems in die Mitte des Bildes gelegt werden
+    # (ansonsten Drehung um obere linke Ecke des Bildes)
+    for x in range(-pixel_mitte, pixel_mitte):
+        for y in range(-pixel_mitte, pixel_mitte):
+            # Rotationsmatrix auf alle x-Werte anwenden
+            koord_xy_transform = (transform @ np.array([x, y, 1]))
+            x_transform = np.int_(np.round(koord_xy_transform[0]))
+            y_transform = np.int_(np.round(koord_xy_transform[1]))
+            # Pixel des Null-Arrays (image_transform) auffuellen:
+            # Pruefen, ob rotierter Wert innerhalb Bereich Originalbild
+            # vorkommt
+            # wenn Bedingung erfuellt existieren Grauwerte im Originalbild,
+            # die ins rotierte Bild an der richtigen Stelle uebernommen werden
+            # (ansonsten Nullen an dieser Stelle)
+            if (-pixel_mitte <= x_transform < pixel_mitte) and \
+               (-pixel_mitte <= y_transform < pixel_mitte):
+                # Addieren vom Zahlenwert des Pixels,von Mitte des 
+                # Koordinatensystems, um Array nicht mit negativen Indices
+                # anzusprechen (wuerde falsche Werte liefern)
+                image_transform[y + pixel_mitte, x + pixel_mitte] = \
+                    image[y_transform + pixel_mitte, x_transform + pixel_mitte]
+    return image_transform
        
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
@@ -729,17 +803,17 @@ def aufgabe_2_5(szinti, pixel, pixel_quadrant):
     # Berechnung mittlerer Informationsgehalt pro Pixel
     infogehalt_einzelne_bitebenen(ebene)
     # Interpretation!!!
-    # einzelne Bitebenen entspricht Zahlencodierung
-    # es werden nur Farbkontraste wirklich sichtbar in oberen Bitebenen?
-    # in unteren Bitebenen nur Rauschen, keine Infos
-    # Arrays der einzelnen Bitebenen bestehen nur aus Einsen und Nullen:
-    # Nullen werden weggeschmissen
-    # daraus folgt Negativer Infogehalt? = sehr gering?
-    # wann besten Infogehalt:laut Bildern bei Bitebene 5, aber laut Tabelle
-    # größter Infogehalt bei Bitebene Null? 
-    # ist kein gutes Maß fuer Bitebenen,da Einsen und Nullen
-    # 7 ist relativ wichtig (most signifikant), unt. weiß / schwarz
-    # Histogramm enthaelt keine raumlichen Infos
+        # einzelne Bitebenen entspricht Zahlencodierung
+        # es werden nur Farbkontraste wirklich sichtbar in oberen Bitebenen?
+        # in unteren Bitebenen nur Rauschen, keine Infos
+        # Arrays der einzelnen Bitebenen bestehen nur aus Einsen und Nullen:
+        # Nullen werden weggeschmissen
+        # daraus folgt Negativer Infogehalt? = sehr gering?
+        # wann besten Infogehalt:laut Bildern bei Bitebene 5, aber laut Tabelle
+        # größter Infogehalt bei Bitebene Null? 
+        # ist kein gutes Maß fuer Bitebenen,da Einsen und Nullen
+        # 7 ist relativ wichtig (most signifikant), unt. weiß / schwarz
+        # Histogramm enthaelt keine raumlichen Infos
     
 
 # TODO: ist relativ langsam. Numba?
@@ -767,24 +841,24 @@ def aufgabe_2_6(szinti, pixel, pixel_quadrant):
                              np.round(info_original, 3),
                              np.round(info_differenz, 3))
     # Interpretation!!!
-    # Differenz entspricht Kompression: eigentlich verlustfrei
-    # das heißt Infogehalt muesste derselbe sein?
-    # Eliminierung redundanter Bildinformationen
-    # Wiederherstellung des Originalbildes i.a. moeglich
-    # Sinn: durch Bildung der Differenz muessen nur noch kleine Zahlenwerte
-    # abgespeichert werden
-    # aber laut Tabelle: Differenzbild weißt weniger Infogehalt auf
-    # laut Formel: bei benachbarten Pixeln mit denselben Grauwerten
-    # ergibt sich als Differenz Null
-    # das heißt wirkliche Bildinformationen treten nur an Kanten/ starken
-    # Bildkontrasten auf
-    # auf spitze Form des Histogramms eingehen:
-    # viele relativ kleine/ mittlere Werte werden abgespeichert im
-    # Differenzbild, keine hohen Farbwerte (da Differenzbildung)
-    # Infogehalt ist pro Pixel
-    # bei Differenzbild ist zwischen einzelnen Pixeln eine mathematische
-    # Abhaengigkeit, bei Originalbild sind Pixel voneinander unabhaengig.
-    # das heißt PRO Pixel ist es bei Differenz niedriger
+        # Differenz entspricht Kompression: eigentlich verlustfrei
+        # das heißt Infogehalt muesste derselbe sein?
+        # Eliminierung redundanter Bildinformationen
+        # Wiederherstellung des Originalbildes i.a. moeglich
+        # Sinn: durch Bildung der Differenz muessen nur noch kleine Zahlenwerte
+        # abgespeichert werden
+        # aber laut Tabelle: Differenzbild weißt weniger Infogehalt auf
+        # laut Formel: bei benachbarten Pixeln mit denselben Grauwerten
+        # ergibt sich als Differenz Null
+        # das heißt wirkliche Bildinformationen treten nur an Kanten/ starken
+        # Bildkontrasten auf
+        # auf spitze Form des Histogramms eingehen:
+        # viele relativ kleine/ mittlere Werte werden abgespeichert im
+        # Differenzbild, keine hohen Farbwerte (da Differenzbildung)
+        # Infogehalt ist pro Pixel
+        # bei Differenzbild ist zwischen einzelnen Pixeln eine mathematische
+        # Abhaengigkeit, bei Originalbild sind Pixel voneinander unabhaengig.
+        # das heißt PRO Pixel ist es bei Differenz niedriger
     
 
 def aufgabe_2_7(szinti, pixel, pixel_quadrant):
@@ -796,9 +870,49 @@ def aufgabe_2_7(szinti, pixel, pixel_quadrant):
     # graphische Darstellung der Fouriertransformierten
     plot_fourier(power, amplitude, phase, "des Bildes aus Aufgabe 1.1")  
     # Interpretation!!!
-    # Phasenbild codiert raeumliche Info
-    # Linien entsprechen Aenderungen in Grauwerten / Farbspruenge / Kanten
-    # gar keine Linien hier? keine Farbaenderungen?
+        # Phasenbild codiert raeumliche Info
+        # Linien entsprechen Aenderungen in Grauwerten / Farbspruenge / Kanten
+        # gar keine Linien hier? keine Farbaenderungen?
+    
+    
+def aufgabe_2_8(szinti, pixel, pixel_quadrant):
+    """ Dreht das Bild aus Aufgabe 1.1 um 30° im positiven Drehsinne,
+        berechnet die Fouriertransformierte und vergleicht das Ergebnis mit
+        dem aus Aufgabe 2.7.
+    """
+    # Plots fuer Ortsraum Originalbild und gedrehtes Bild erstellen:
+    ax1, ax2 = plot_vorbereitung_2sp('Ortsraum', 'Originalbild aus ' +
+                                     'Aufgabe 1.1', 'um 30° gedrehtes Bild')
+    # Plot Originalbild Ortsraum
+    ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    # Drehmatrix erstellen (um 30° im positivem Sinne)
+    dreh = drehmatrix(30)
+    # Erstellung gedrehtes Originalbild Ortsraum
+    szinti_transform = transformation(szinti, pixel_quadrant, dreh)
+    # Plot gedrehtes Originalbild Ortsraum
+    ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
+    
+    # Plots fuer Frequenzraum Originalbild und gedrehtes Bild erstellen:
+    ax3, ax4 = plot_vorbereitung_2sp('Frequenzraum - Leistungsspektrum',
+                                     'Originalbild aus Aufgabe 1.1',
+                                     'um 30° gedrehtes Bild',
+                                     '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$',
+                                     ticks=True)
+    # Fouriertransformation: Erstellung Leistungsspektrum
+    _, power, _, _ = calculate_fourier(szinti)
+    # Plot Leistungsspektrum
+    ax3.imshow(power, cmap='gray', norm=LogNorm(),
+               extent=[-0.5, 0.5, -0.5, 0.5])
+    # Erstellung gedrehtes Leistungsspektrum
+    power_transform = transformation(power, pixel_quadrant, dreh)
+    # Plot Leistungsspektrum gedrehtes Bild
+    ax4.imshow(power_transform, cmap='gray', norm=LogNorm(),
+               extent=[-0.5, 0.5, -0.5, 0.5])
+    plt.show()
+    # Interpretation!!!
+          # eine Drehung der Ortsfunktion um den Winkel alpha fuehrt zu einer
+          # gleichartigen Drehung der entsprechenden Frequenzfunktion im
+          # Frequenzraum
 
 
 def main():
@@ -821,6 +935,8 @@ def main():
     aufgabe_2_6(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.7
     aufgabe_2_7(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.8
+    aufgabe_2_8(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:
