@@ -13,6 +13,7 @@
 # TODO: Ergebnisse vergleichen
 # TODO: Fkt unnoetigerweise doppelt aufgerufen?
 # TODO: welche Fkt sind wirklich nuetzlich?
+# TODO: Plotfkt: (mit norm, extent usw...)
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -713,6 +714,29 @@ def transformation(image, pixel_mitte, transform):
     return image_transform
        
 
+def transformationsmatrix(dreh):
+    """ Transformation eines Bildes:
+        Diese Matrix fuehrt zunaechst eine Drehung (im positivem Drehsinne)
+        und anschließend eine Scherung (entsprechend Vorlesung, Folie 136 aus
+        dem Modul MF-MRS_14 Digitale Bildverarbeitung) durch.
+
+        Parameter:
+        ----------
+        dreh: Drehmatrix, welche zuerst auf das Bild angewendet werden soll.
+        Danach erfolgt eine Scherung.
+    """
+    # Schermatrix in homogenen Koordinaten
+    scherung = np.array([[1, -(np.sqrt(2) / 2), 0],
+                         [0, (np.sqrt(2) / 2), 0], [0, 0, 1]])
+    # Schermatrix invertieren, da Transformation im positiven Sinn
+    scherung = np.linalg.inv(scherung)
+    # Transformationsmatrix:
+    # Hintereinander-Ausfuehrung von Drehung und Scherung durch einfaches
+    # Multiplizieren der einzelnen Transformationsmatrizen
+    transform = (dreh @ scherung)
+    return transform
+
+
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
         Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
@@ -865,6 +889,9 @@ def aufgabe_2_7(szinti, pixel, pixel_quadrant):
     """ Berechnet 2D Fouriertransformierte und das Leistungsspektrum des
         Bildes aus Aufgabe 1.1:
     """
+    print("")
+    print("Aufgabe 2.7:")
+    print("")
     # Fouriertransformation
     fourier_image, power, amplitude, phase = calculate_fourier(szinti)
     # graphische Darstellung der Fouriertransformierten
@@ -874,12 +901,16 @@ def aufgabe_2_7(szinti, pixel, pixel_quadrant):
         # Linien entsprechen Aenderungen in Grauwerten / Farbspruenge / Kanten
         # gar keine Linien hier? keine Farbaenderungen?
     
-    
+
+# TODO: noch mehr Funktionen?
 def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     """ Dreht das Bild aus Aufgabe 1.1 um 30° im positiven Drehsinne,
         berechnet die Fouriertransformierte und vergleicht das Ergebnis mit
         dem aus Aufgabe 2.7.
     """
+    print("")
+    print("Aufgabe 2.8:")
+    print("")
     # Plots fuer Ortsraum Originalbild und gedrehtes Bild erstellen:
     ax1, ax2 = plot_vorbereitung_2sp('Ortsraum', 'Originalbild aus ' +
                                      'Aufgabe 1.1', 'um 30° gedrehtes Bild')
@@ -913,6 +944,33 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
           # eine Drehung der Ortsfunktion um den Winkel alpha fuehrt zu einer
           # gleichartigen Drehung der entsprechenden Frequenzfunktion im
           # Frequenzraum
+       
+        
+def aufgabe_3_2(szinti, pixel, pixel_quadrant):
+    """ Fuehrt nacheinander zunaechst eine Rotation um 90° (im positiven
+        Drehsinne) und anschließend eine Scherung auf das Bild aus
+        Aufgabe 1.1 durch. """
+    print("")
+    print("Aufgabe 3.2:")
+    print("")
+    # Plots:
+    # Plots (fuer Originalbild und transformiertes Bild aus Aufgabe 1.1)
+    # erstellen
+    ax1, ax2 = plot_vorbereitung_2sp('Ortsraum', 'Originalbild ' +
+                                     'aus Aufgabe 1.1',
+                                     'transformiertes Bild')
+    # Plot Originalbild
+    ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    # Drehmatrix mit 30° als Winkel erstellen
+    dreh = drehmatrix(90)
+    # Transformationmatrix erstellen
+    transform = transformationsmatrix(dreh)
+    # Transformationsmatrix auf Bild aus Aufgabe 1.1 anwenden
+    # (positive Drehung um 90°, Scherung)
+    szinti_transform = transformation(szinti, pixel_quadrant, transform)
+    # Plot transformiertes Bild aus Aufgabe 1.1
+    ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 def main():
@@ -937,6 +995,8 @@ def main():
     aufgabe_2_7(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.8
     aufgabe_2_8(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.2
+    aufgabe_3_2(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:

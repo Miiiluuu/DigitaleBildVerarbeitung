@@ -9,27 +9,7 @@ import matplotlib.pyplot as plt
 
 import Aufgabe_1_1
 import Aufgabe_2_7
-
-# TODO: Plotfkt: (mit norm, extent usw...)
-
-
-def plot_vorbereitung(ueberschrift, unterueberschrift1, unterueberschrift2):
-    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
-        entsprechenden Subplots, Ueberschriften etc. """
-    fig = plt.figure(figsize=(9, 10))
-    # Hinzufuegen der Ueberschrift zum Plot
-    fig.suptitle(ueberschrift, fontsize=16)
-    # erster Subplot
-    ax1 = fig.add_subplot(121)
-    # Hinzufuegen einer Unterueberschrift
-    plt.title(unterueberschrift1)
-    # zweiter Subplot
-    ax2 = fig.add_subplot(122)
-    # Hinzufuegen einer Unterueberschrift
-    plt.title(unterueberschrift2)
-    # Ueberlappungen vermeiden
-    plt.tight_layout(rect=[0, 0.03, 1, 1.1])
-    return ax1, ax2
+import Aufgabe_2_1
 
 
 def tiefpassfilter(image):
@@ -74,8 +54,7 @@ def anwendung_filter_image(fourier_image, filter_image):
     fourier_gefiltert = np.fft.ifftshift(fourier_gefiltert)
     # Ruecktransformation Frequenz- in Ortsraum
     image_gefiltert = np.fft.ifft2(fourier_gefiltert)
-    # Realteil vom Bild extrahieren
-    # TODO: (Imaginärteil ist nahe Null: Rundungsfehler?)
+    # Realteil vom Bild zur spaeteren graphischen Darstellung extrahieren
     image_gefiltert = np.real(image_gefiltert)
     return image_gefiltert
 
@@ -83,14 +62,14 @@ def anwendung_filter_image(fourier_image, filter_image):
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-    # Fouriertransformation: Leistungsspektrum
+    # Fouriertransformation
     fourier_szinti, _, _, _ = Aufgabe_2_7.calculate_fourier(szinti)
     # Erzeugung Tiefpassfilter in Groeße des Originalbildes
     filter_tief = tiefpassfilter(szinti)
     # Anwendung des Tiefpassfilters auf Originalbild
     szinti_gefiltert = anwendung_filter_image(fourier_szinti, filter_tief)
     # Plots
-    ax1, ax2 = plot_vorbereitung('Tiefpassfilterung \n'
+    ax1, ax2 = Aufgabe_2_1.plot_vorbereitung_2sp('Tiefpassfilterung \n'
                                  '(obere Grenzfrequenz: ' +
                                  '|ν_lim| = 0.25 ∙ ν_Nvquist)', 'Originalbild',
                                  'gefiltertes Bild')

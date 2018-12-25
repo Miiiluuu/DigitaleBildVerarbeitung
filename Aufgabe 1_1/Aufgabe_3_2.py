@@ -2,6 +2,8 @@
     Aufgabe 3.2:
     Fuehrt nacheinander zunaechst eine Rotation um 90° (im positiven Drehsinne)
     und anschließend eine Scherung auf das Bild aus Aufgabe 1.1 durch.
+
+    @author: Mieke Möller
 """
 
 import numpy as np
@@ -11,12 +13,12 @@ import Aufgabe_1_1
 import Aufgabe_2_1
 import Aufgabe_2_8
 
-        
+
 def transformationsmatrix(dreh):
-    """ Transformation eines Bildes: 
-        Dabei wird zunaechst eine Drehung (im positivem Drehsinne) und 
-        anschließend eine Scherung (entsprechend Vorlesung, Folie 136 aus dem
-        Modul MF-MRS_14 Digitale Bildverarbeitung) durchgefuehrt.
+    """ Transformation eines Bildes:
+        Diese Matrix fuehrt zunaechst eine Drehung (im positivem Drehsinne)
+        und anschließend eine Scherung (entsprechend Vorlesung, Folie 136 aus
+        dem Modul MF-MRS_14 Digitale Bildverarbeitung) durch.
 
         Parameter:
         ----------
@@ -39,7 +41,8 @@ def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
     # Plots:
-    # Originalbild und transformiertes Bild aus Aufgabe 1.1
+    # Plots (fuer Originalbild und transformiertes Bild aus Aufgabe 1.1)
+    # erstellen
     ax1, ax2 = Aufgabe_2_1.plot_vorbereitung_2sp('Ortsraum', 'Originalbild ' +
                                                  'aus Aufgabe 1.1',
                                                  'transformiertes Bild')
@@ -51,15 +54,13 @@ def main():
     transform = transformationsmatrix(dreh)
     # Transformationsmatrix auf Bild aus Aufgabe 1.1 anwenden
     # (positive Drehung um 90°, Scherung)
-    szinti_transform = Aufgabe_2_8.transformation(szinti, pixel_quadrant, transform)
+    szinti_transform = Aufgabe_2_8.transformation(szinti, pixel_quadrant,
+                                                  transform)
     # Plot transformiertes Bild aus Aufgabe 1.1
     ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 if __name__ == "__main__":
     main()
 
-# Interpretation:
-    # eine Drehung der Funktion im Ortsraum fuehrt zu einer gleichartigen Drehung
-    # im Frequenzraum
-    # Drehung im Frequenzraum richtig?
