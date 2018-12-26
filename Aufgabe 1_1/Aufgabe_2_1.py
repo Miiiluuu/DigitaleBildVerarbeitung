@@ -2,7 +2,7 @@
     Aufgabe 2.1:
     Erstellt die Grauwertprofile fuer das Bild aus Aufgabe 1.1 laengs der
     Linien y = 60 mm und y = -60 mm.
-    
+
     @author: Mieke Möller
 """
 

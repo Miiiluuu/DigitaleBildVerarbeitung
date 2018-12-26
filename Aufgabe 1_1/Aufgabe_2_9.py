@@ -2,57 +2,63 @@
     Aufgabe 2.9:
     Anwendung eines Tiefpassfilters mit einer oberen Grenzfrequenz von
     |ν_lim| = 0.25 ∙ ν_Nvquist auf das Bild aus Aufgabe 1.1.
+
+    @author: Mieke Möller
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import Aufgabe_1_1
-import Aufgabe_2_7
 import Aufgabe_2_1
+import Aufgabe_2_7
 
 
-def tiefpassfilter(image, anteil, pixel_mitte,):
-    """ Erstellt Tiefpassfilter mit einer oberen Grenzfreuenz: hat Form eines
-        Kreises mit einem bestimmten Radius.
+def make_kreisfilter(image, anteil, pixel_mitte):
+    """ Erstellt Filter (in Groeße eines Bildes 'image', Filterform Kreis)
+        mit einer oberen Grenzfrequenz: hat Form eines Kreises mit einem
+        bestimmten Radius.
 
         Parameter:
         ----------
         image: Array, Eingabewerte.
-        
-        anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des 
+
+        anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des
         Tiefpassfilters bestimmt.
-        
+
         pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
         TODO: nicht immer perfekt eingehalten?
     """
-    filter_tief = np.zeros_like(image)
+    filter_kreis = np.zeros_like(image)
     # TODO: pixel_mitte (128) ≙ Nyquist-Frequenz. warum?
-    # Radius des Kreises berechnen
-    # (definiert obere Grenzfrequenz des Tiefpassfilters, ≙ Radius
-    # eines Kreises, welcher tiefe Frequenzen durchlässt.)
-    radius = pixel_mitte * anteil
+    # Radius eines Kreises berechnen, welcher tiefe Frequenzen durchlässt
+    # (definiert obere Grenzfrequenz des Tiefpassfilters)
+    radius = pixel_mitte * anteil       # TODO: pixel_mitte = 128 = ν_Nvquist?
+                                        # nur in diesem Fall: Allgemein?
     for x in range(len(image)):
         for y in range(len(image)):
             deltax = pixel_mitte - x
             deltay = pixel_mitte - y
             if deltax**2 + deltay**2 <= radius**2:
-                filter_tief[y, x] = 1
-    return filter_tief
+                filter_kreis[y, x] = 1
+    return filter_kreis
 
 
-def anwendung_filter_image(fourier_image, filter_image):
-    """ Anwendung des Filters auf ein Bild.
+def use_filter(image, filter_image):
+    """ Anwendung des Filters auf ein Bild. Dafuer wird Fouriertransformation
+        des Eingabebildes berechnet. Die Fouriertransformierte wird
+        anschließend gefiltert (durch eine Multiplikation der Filtermaske, im
+        Frequenzraum).
 
         Parameter:
         ----------
-        fourier_image: Fouriertransformierte des Eingabebildes, auf dem ein
-        Filter angewendet wird.
+        image: Array, Eingabewerte.
 
         filter_image: Filter, der auf ein Eingabebild angewendet wird.
     """
-    # TODO: in diese Fkt Weg vom Originalbild zum gefilterten Bild
-    # (Einbeziehung Fouriertransformation)
+    # Fouriertransformation des Eingabebildes
+    fourier_image, _, _, _ = Aufgabe_2_7.calculate_fourier(image)
+    # Multiplikation im Frequenzraum
     fourier_gefiltert = fourier_image * filter_image
     # Bild zurueckshiften
     fourier_gefiltert = np.fft.ifftshift(fourier_gefiltert)
@@ -66,18 +72,20 @@ def anwendung_filter_image(fourier_image, filter_image):
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-    # Fouriertransformation
-    fourier_szinti, _, _, _ = Aufgabe_2_7.calculate_fourier(szinti)
-    # Erzeugung Tiefpassfilter in Groeße des Originalbildes
-    filter_tief = tiefpassfilter(szinti)
+    # Erzeugung Tiefpassfilter (in Groeße des Originalbildes)
+    filter_tief = make_kreisfilter(szinti, 0.25, pixel_quadrant)
     # Anwendung des Tiefpassfilters auf Originalbild
-    szinti_gefiltert = anwendung_filter_image(fourier_szinti, filter_tief)
-    # Plots
+    szinti_gefiltert = use_filter(szinti, filter_tief)
+    # Erstellung Plots fuer graphische Darstellung Originalbild und
+    # gefiltertes Bild
     ax1, ax2 = Aufgabe_2_1.plot_vorbereitung_2sp('Tiefpassfilterung \n'
-                                 '(obere Grenzfrequenz: ' +
-                                 '|ν_lim| = 0.25 ∙ ν_Nvquist)', 'Originalbild',
-                                 'gefiltertes Bild')
+                                                 '(obere Grenzfrequenz: ' +
+                                                 '|ν_lim| = 0.25 ∙ ν_Nvquist)',
+                                                 'Originalbild',
+                                                 'gefiltertes Bild')
+    # Plot Originalbild
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    # Plot gefiltertes Bild
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
 

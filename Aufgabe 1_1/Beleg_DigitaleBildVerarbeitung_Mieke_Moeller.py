@@ -14,6 +14,7 @@
 # TODO: Fkt unnoetigerweise doppelt aufgerufen?
 # TODO: welche Fkt sind wirklich nuetzlich?
 # TODO: Plotfkt: (mit norm, extent usw...)
+# TODO: Tritt irgendwo was doppelt auf?
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -737,6 +738,99 @@ def transformationsmatrix(dreh):
     return transform
 
 
+def make_kreisfilter(image, anteil, pixel_mitte,):
+    """ Erstellt Filter (in Groeße eines Bildes 'image', Filterform Kreis)
+        mit einer oberen Grenzfrequenz: hat Form eines Kreises mit einem
+        bestimmten Radius.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des
+        Tiefpassfilters bestimmt.
+
+        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
+        TODO: nicht immer perfekt eingehalten?
+    """
+    filter_kreis = np.zeros_like(image)
+    # TODO: pixel_mitte (128) ≙ Nyquist-Frequenz. warum?
+    # Radius eines Kreises berechnen, welcher tiefe Frequenzen durchlässt
+    # (definiert obere Grenzfrequenz des Tiefpassfilters)
+    radius = pixel_mitte * anteil       # TODO: pixel_mitte = 128 = ν_Nvquist?
+                                        # nur in diesem Fall: Allgemein?
+    for x in range(len(image)):
+        for y in range(len(image)):
+            deltax = pixel_mitte - x
+            deltay = pixel_mitte - y
+            if deltax**2 + deltay**2 <= radius**2:
+                filter_kreis[y, x] = 1
+    return filter_kreis
+
+
+def use_filter(image, filter_image):
+    """ Anwendung des Filters auf ein Bild. Dafuer wird Fouriertransformation
+        des Eingabebildes berechnet. Die Fouriertransformierte wird
+        anschließend gefiltert (durch eine Multiplikation der Filtermaske, im
+        Frequenzraum).
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        filter_image: Filter, der auf ein Eingabebild angewendet wird.
+    """
+    # Fouriertransformation des Eingabebildes
+    fourier_image, _, _, _ = calculate_fourier(image)
+    # Multiplikation im Frequenzraum
+    fourier_gefiltert = fourier_image * filter_image
+    # Bild zurueckshiften
+    fourier_gefiltert = np.fft.ifftshift(fourier_gefiltert)
+    # Ruecktransformation Frequenz- in Ortsraum
+    image_gefiltert = np.fft.ifft2(fourier_gefiltert)
+    # Realteil vom Bild zur spaeteren graphischen Darstellung extrahieren
+    image_gefiltert = np.real(image_gefiltert)
+    return image_gefiltert
+
+
+def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
+    """ Erstellt Bandpassfilter mit einem bestimmten erlaubten Frequenzbereich.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        anteil_up: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des
+        Bandpassfilters bestimmt.
+
+        anteil_down: Anteil der Nyquistfrequenz, welche untere Grenzfrequenz
+        des Bandpassfilters bestimmt.
+
+        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
+        TODO: nicht immer perfekt eingehalten?
+    """
+    # Teilkreis / -filter 1:
+    filter_kreis1 = make_kreisfilter(image, anteil_up, pixel_mitte)
+    # Teilkreis / -filter 2:
+    filter_kreis2 = make_kreisfilter(image, anteil_down, pixel_mitte)
+    # Teilfilter 1 und 2 zusammensetzen zu Gesamtfilter (entspricht
+    # Bandpassfilter, siehe Vorlesung zu Modul MF-MRS_14 Digitale
+    # Bildverarbeitung, Folie 107)
+    filter_band = filter_kreis1 - filter_kreis2
+    return filter_band
+
+
+def make_hochpassfilter(image, anteil, pixel_mitte):
+    """ Erstellt Hochpassfilter (in Groeße eines Bildes 'image',
+        Filterform Kreis), welcher nur hohe Frequenzen durchlaesst.
+    """
+    # Erstellung Kreisfilter
+    filter_kreis = make_kreisfilter(image, anteil, pixel_mitte)
+    # inverser Kreis- ist Hochpassfilter
+    filter_hochpass = 1 - filter_kreis
+    return filter_hochpass
+
+
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
         Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
@@ -944,8 +1038,100 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
           # eine Drehung der Ortsfunktion um den Winkel alpha fuehrt zu einer
           # gleichartigen Drehung der entsprechenden Frequenzfunktion im
           # Frequenzraum
-       
+          
+          
+def aufgabe_2_9(szinti, pixel, pixel_quadrant):
+    """ Anwendung eines Tiefpassfilters mit einer oberen Grenzfrequenz von
+        |ν_lim| = 0.25 ∙ ν_Nvquist auf das Bild aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 2.9:")
+    print("")
+    # Erzeugung Tiefpassfilter (in Groeße des Originalbildes)
+    filter_tief = make_kreisfilter(szinti, 0.25, pixel_quadrant)
+    # Anwendung des Tiefpassfilters auf Originalbild
+    szinti_gefiltert = use_filter(szinti, filter_tief)
+    # Erstellung Plots fuer graphische Darstellung Originalbild und
+    # gefiltertes Bild
+    ax1, ax2 = plot_vorbereitung_2sp('Tiefpassfilterung \n'
+                                     '(obere Grenzfrequenz: ' +
+                                     '|ν_lim| = 0.25 ∙ ν_Nvquist)',
+                                     'Originalbild', 'gefiltertes Bild')
+    # Plot Originalbild
+    ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    # Plot gefiltertes Bild
+    ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
+    # Interpretation:
+        # Schaerfe ist weggenommen vom Originalbild, da hohe Frequenzen
+        # rausgeschnitten wurden (hohe Frequenzen sind fuer Kanten, Abbildung
+        # Details zustaendig)
+        # periodisches Muster in Funktion reingebracht durch Anwenden einer
+        # Kastenfunktion mit Kreis im Frequenzraum, die im Ortsraum wiederum
+        # eine periodische sinc-Funktion ergibt?
         
+    
+def aufgabe_2_10(szinti, pixel, pixel_quadrant):
+    """ Anwendung eines Bandpassfilters mit einem erlaubten Frequenzbereich von
+        3/8 ∙ ν_Nvquist < |ν| < 5/8 ∙ ν_Nvquist auf das Bild aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 2.10:")
+    print("")
+    # Erzeugung Bandpassfilter (in Groeße des Originalbildes)
+    filter_band = bandpassfilter(szinti, (5 / 8),  (3 / 8), pixel_quadrant)
+    # Anwendung des Bandpassfilters auf Originalbild
+    szinti_gefiltert = use_filter(szinti, filter_band)
+    # Erstellung Plots fuer graphische Darstellung Originalbild und
+    # gefiltertes Bild
+    ax1, ax2 = plot_vorbereitung_2sp('Bandpassfilterung \n'
+                                    '(erlaubter Frequenzbereich: ' +
+                                    '3/8 ∙ ν_Nvquist < |ν| < 5/8 ∙ ν_Nvquist)',
+                                    'Originalbild', 'gefiltertes Bild')
+    # Plot Originalbild
+    ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    # Plot gefiltertes Bild
+    ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
+    # Interpretation!!!
+        # mittleren Frequenzen passieren Filter, sind noch in Originalbild
+        # vorhanden,übrigen Frequenzen (hohe und tiefe) werden gesperrt
+        # Kanten (durch hohe Frequenzen) nur noch geringfügig drin, es lassen
+        # sich nur noch Tendenzen erkennen
+        # ist frequenzselektiver Filter (laesst einzelne Teile des Frequenzbandes
+        # durch und sperrt andere )
+        
+        
+def aufgabe_2_11(szinti, pixel, pixel_quadrant):
+    """ Anwendung eines Hochpassfilters mit einem erlaubten Frequenzbereich
+        von 3/4 ∙ ν_Nvquist < |ν| < ν_Nvquist auf das Bild aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 2.11:")
+    print("")
+    # Erzeugung Tiefpassfilter (in Groeße des Originalbildes)
+    filter_hochpass = make_hochpassfilter(szinti, (3 / 4), pixel_quadrant)
+    # Anwendung des Tiefpassfilters auf Originalbild
+    szinti_gefiltert = use_filter(szinti, filter_hochpass)
+    # Erstellung Plots fuer graphische Darstellung Originalbild und
+    # gefiltertes Bild
+    ax1, ax2 = plot_vorbereitung_2sp('Hochpassfilterung \n'
+                                     '(erlaubter Frequenzbereich: ' +
+                                     '3/4 ∙ ν_Nvquist < |ν| < ν_Nvquist',
+                                     'Originalbild', 'gefiltertes Bild')
+    # Plot Originalbild
+    ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    # Plot gefiltertes Bild
+    ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
+    # Interpretation:
+        # hohe Frequenzen des Originalbildes noch vorhanden
+        # (sind fuer Kanten, Abbildung Details zustaendig)
+        # d.h. strukturreiche/detailreiche Elemente gut zu sehen
+        # aber dafuer sind niedrige Frequenzen, welche homogene Bereiche des
+        # Bildes, kontinuierliche (Grauwert)uebergaenge darstellen, weg
+
+
 def aufgabe_3_2(szinti, pixel, pixel_quadrant):
     """ Fuehrt nacheinander zunaechst eine Rotation um 90° (im positiven
         Drehsinne) und anschließend eine Scherung auf das Bild aus
@@ -995,6 +1181,12 @@ def main():
     aufgabe_2_7(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.8
     aufgabe_2_8(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.9
+    aufgabe_2_9(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.10
+    aufgabe_2_10(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.11
+    aufgabe_2_11(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 3.2
     aufgabe_3_2(szinti, pixel, pixel_quadrant)
 
