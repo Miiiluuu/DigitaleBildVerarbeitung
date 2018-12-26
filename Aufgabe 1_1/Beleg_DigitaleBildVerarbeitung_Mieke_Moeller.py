@@ -592,8 +592,7 @@ def calculate_fourier(image):
 
 
 # TODO: plot_vorbereitungen 2, 3, 6 oder 9 Subplots in einer Fkt?
-def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
-                          unterueberschrift3, abszisse, ordinate):
+def plot_vorbereitung_3sp(ueberschrift, sub_ueberschriften, abszisse, ordinate):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
     """
@@ -604,9 +603,12 @@ def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     axs = axs.ravel()
     # TODO: Schleife??
     # Unterueberschriften der Subplots
-    axs[0].set_title(unterueberschrift1)
-    axs[1].set_title(unterueberschrift2)
-    axs[2].set_title(unterueberschrift3)
+    # entsprechende Unterueberschriften der Subplots
+    for i in range(3):
+        axs[i].set_title(sub_ueberschriften[i])
+#    axs[0].set_title(unterueberschrift1)
+#    axs[1].set_title(unterueberschrift2)
+#    axs[2].set_title(unterueberschrift3)
     # Ueberlappungen vermeiden
     plt.tight_layout(w_pad=3.5, rect=[0, 0, 1, 1.4])
     # Achsenbeschriftungen und Grid
@@ -637,8 +639,8 @@ def plot_fourier(power, amplitude, phase, herkunft):
         phase: Phasenbild einer 2D-Fouriertransformierten.
     """
     axs = plot_vorbereitung_3sp(f'''Fouriertransformation {herkunft}''',
-                                'Leistungsspektrum',
-                                'Amplitudenbild', 'Phasenbild',
+                                ['Leistungsspektrum',
+                                 'Amplitudenbild', 'Phasenbild'],
                                 '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$')
     # Leistungsspektrum
     axs[0].imshow(power, cmap='gray', norm=LogNorm(),
@@ -940,6 +942,96 @@ def plot_graukeile_transform(graukeile):
     for i in range(6):
         axs[i].imshow(graukeile[i], cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
+    
+    
+def make_mittelwertfilter():
+    """ Erstellung eines 3x3-Mittelwertfilters mit entsprechender Normierung
+        (1 / 9).
+    """
+    mittelwertfilter = (1 / 9) * np.ones((3, 3))
+    return mittelwertfilter
+
+
+def make_binfilter():
+    """ Erstellung eines 3x3-Binomialfilters mit entsprechender Normierung
+        (1 / 16). Werte sind entnommen aus Pascalschen Dreieck.
+    """
+    binfilter = (1 / 16) * np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]])
+    return binfilter
+
+
+def use_filter_image(image, filter_art=None):
+    """ Anwendung eines 3x3-Filters auf ein Bild 'image'.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        filter_art: Beschreibt 3x3-Filter (-Array), welcher auf das Bild
+        'image' angewendet wird. Bei Auswahl eines naeher spezifizierten
+        Argumentes wird dieser fuer das Filtern des Bildes verwendet.
+        Falls Argument nicht angegeben, (es wird keine Filterart ausgewaehlt),
+        wird fuer das 'image' ein 3x3-Medianfilter benutzt.
+    """
+    # Schleife: jeden Pixel einzeln durchgehen (bis auf aeußere Pixel
+    # (-Randbereich)), da diese von Filter nicht beruecksichtigt wird:
+    # (aeußere Rand-Pixel werden auf Null gesetzt)
+    image_gefiltert = np.zeros((len(image), len(image)))
+    for x in range(1, len(image)-1):
+        for y in range(1, len(image)-1):
+            # Filterbereich, der einzeln (fuer jeden Pixel) wirksam wird (3x3)
+            bereich = image[y-1:y+2, x-1:x+2]
+            # Anwenden eines Medianfilters auf das Bild, falls fuer filter_art
+            # kein Argument ausgewaehlt ist
+            if filter_art is None:
+                image_gefiltert[y, x] = np.median(bereich)
+            # ansonsten Anwenden eines anderen 3x3-Filters auf das Bild
+            # (je nachdem, welches Argument der Funktion beim Aufruf gegeben
+            # wird)
+            else:
+                # Anwendung Filter auf Filterbereich
+                bereich_filter = bereich * filter_art
+                # Fuellen des entsprechenden Pixels mit neuem gefilterten Wert
+                image_gefiltert[y, x] = np.sum(bereich_filter)
+    return image_gefiltert
+
+
+def plot_vorbereitung_8sp(ueberschrift, sub_ueberschriften,
+                          sub_ueberschrift_grau, abszisse,
+                          ordinate):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
+        Ueberschrift, einzelnen Subplots etc.
+
+        Parameter:
+        ----------
+        ueberschrift: Ueberschrift der Figure.
+
+        sub_ueberschriften: Liste an Ueberschriften fuer die ersten
+        Subplots.
+
+        sub_ueberschrift_grau: Ueberschrift der Subplots, welche ein Grauwert-
+        profil enthalten.
+
+        abszisse: Beschriftung der Abszisse von den Subplots, die ein Grauwert-
+        profil enthalten.
+
+        ordinate: Beschriftung der Ordinate von den Subplots, die ein Grauwert-
+        profil enthalten.
+    """
+    # Erstellen von (acht) Subplots:
+    fig, axs = plt.subplots(2, 4, figsize=(20, 10), facecolor='w')
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    fig.subplots_adjust(hspace=0.5, wspace=0.5)
+    axs = axs.ravel()
+    # entsprechende Unterueberschriften der Subplots
+    for i in range(4):
+        axs[i].set_title(sub_ueberschriften[i])
+    for i in range(4, 8):
+        axs[i].set_title(sub_ueberschrift_grau)
+        axs[i].set_xlabel(abszisse)
+        axs[i].set_ylabel(ordinate)
+    return axs 
 
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
@@ -1287,6 +1379,79 @@ def aufgabe_3_2(szinti, pixel, pixel_quadrant):
     # Plot transformiertes Bild aus Aufgabe 1.1
     ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
+    
+
+def aufgabe_3_3(szinti, pixel, pixel_quadrant):
+    """ Anwendung eines 3x3- Mittelwert-, 3x3- Median- und einem
+        3x3-Bionomialfilter am Bild aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 3.3:")
+    print("")
+    # Erstellung der Filter
+    mittelwertfilter = make_mittelwertfilter()
+    binfilter = make_binfilter()
+    # Anwendung Filter auf das Bild aus Aufgabe 1.1:
+    # Mittelwertfilter
+    szinti_filter_avg = use_filter_image(szinti, mittelwertfilter)
+    # Medianfilter
+    szinti_filter_med = use_filter_image(szinti)
+    # Binomialfilter
+    szinti_filter_bin = use_filter_image(szinti, binfilter)
+    # Erstellung Grauwertprofile entlang y-Linie = 60:
+    # fuer Originalbild aus Aufgabe 1.1
+    grauprofil_60_szinti = extraktion_aus_array(szinti, pixel_quadrant - 60)
+    # fuer angewendeten 3x3-Mittelwertsfilter
+    grauprofil_60_avg = extraktion_aus_array(szinti_filter_avg,
+                                             pixel_quadrant - 60)
+    # fuer angewendeten 3x3-Medianfilter
+    grauprofil_60_med = extraktion_aus_array(szinti_filter_med,
+                                             pixel_quadrant - 60)
+    # fuer angewendeten 3x3-Binomialfilter
+    grauprofil_60_bin = extraktion_aus_array(szinti_filter_bin,
+                                             pixel_quadrant - 60)
+    # einzelne Subplots erstellen:
+    axs = plot_vorbereitung_8sp('Vergleich verschiedener Glaettungsverfahren',
+                                ['Originalbild aus Aufgabe 1.1',
+                                 '3x3-Mittelwertfilter', '3x3-Medianfilter',
+                                 '3x3-Binomialfilter'],
+                                'entsprechendes Grauwertprofile \n'
+                                '- laengs y = 60 - ',
+                                r'$x/mm$', 'Grauwert')
+    # Anlegen einer Liste, welche einzelnen (gefilterten) Bilder und die
+    # entsprechenden Grauwertprofile enthaelt
+    bilder = [szinti, szinti_filter_avg, szinti_filter_med,
+              szinti_filter_bin, grauprofil_60_szinti, grauprofil_60_avg,
+              grauprofil_60_med, grauprofil_60_bin]
+    # Plot der (verschieden) gefilterten Bilder (aus Aufgabe 1.1)
+    for i in range(4):
+        axs[i].imshow(bilder[i], cmap='gray', extent=[-128, 128, -128, 128])
+    # Plot der Grauwertprofile (entlang y = 60) fuer die entsprechenden
+    # Filterungen
+    for i in range(4, 8):
+        axs[i].plot((np.arange(-pixel_quadrant, pixel_quadrant)), bilder[i])
+    plt.show()
+    # Vergleich
+        # alle sind Glättungsverfahren: Reduzieren des Bildrauschens,
+        # Unebenheiten in den Grauwerten des Bildes (teilweise "hohe
+        # Bildfrequenzen" beseitigen, siehe auch entsprechende Grauwertprofile)
+        # Mittelwert: Elimination hoher Bildfrequenzen, damit sind Kanten
+        # (Darstellung mit hohen Frequenzen) abgeflacht, Bild wird
+        # "verschmiert"
+        # Median hat sowohl Glättungswirkung und kann auch Kantensteilheit
+        # erhalten
+        # dafür aber Artefakte in spitzwinkligen Strukturen, die vorher nicht
+        # da
+        # waren (z.B. siehe abgebrochene Ecken in Rechtecken/Flaechenquelle
+        # A & B)
+        # allg. Robustheit gegen Ausreisser, effektiv gegen Salt-und-Pepper
+        # Rauschen gegenüber Mittelwert
+        # (hier wird Helligkeitsrauschen geglaettet)
+        # Binomial ist spezielle Form des Mittelwertfilters, dabei liegt mehr
+        # Gewicht auf mittleren Pixel waehrend hier verwendeter
+        # Mittelwertfilter jedem Pixel das
+        # selbe Gewicht Eins gibt (dadurch nicht mehr so verschmiert? bzw keine
+        # Artefakte)
 
 
 def main():
@@ -1321,6 +1486,8 @@ def main():
     aufgabe_3_1()
     # Aufruf Aufgabe 3.2
     aufgabe_3_2(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.3
+    aufgabe_3_3(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:
