@@ -12,26 +12,30 @@ import Aufgabe_2_7
 import Aufgabe_2_1
 
 
-def tiefpassfilter(image):
+def tiefpassfilter(image, anteil, pixel_mitte,):
     """ Erstellt Tiefpassfilter mit einer oberen Grenzfreuenz: hat Form eines
         Kreises mit einem bestimmten Radius.
 
         Parameter:
         ----------
         image: Array, Eingabewerte.
-
-        radius: definiert obere Grenzfrequenz des Tiefpassfilters, ≙ Radius
-        eines Kreises, welcher tiefe Frequenzen durchlässt.
+        
+        anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des 
+        Tiefpassfilters bestimmt.
+        
+        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
+        TODO: nicht immer perfekt eingehalten?
     """
     filter_tief = np.zeros_like(image)
-    # Mittelpunkt des Bildes berechnen
-    mitte_image = len(image) // 2           # = 128
+    # TODO: pixel_mitte (128) ≙ Nyquist-Frequenz. warum?
     # Radius des Kreises berechnen
-    radius = 128 * 0.25
+    # (definiert obere Grenzfrequenz des Tiefpassfilters, ≙ Radius
+    # eines Kreises, welcher tiefe Frequenzen durchlässt.)
+    radius = pixel_mitte * anteil
     for x in range(len(image)):
         for y in range(len(image)):
-            deltax = mitte_image - x
-            deltay = mitte_image - y
+            deltax = pixel_mitte - x
+            deltay = pixel_mitte - y
             if deltax**2 + deltay**2 <= radius**2:
                 filter_tief[y, x] = 1
     return filter_tief
@@ -75,6 +79,7 @@ def main():
                                  'gefiltertes Bild')
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 if __name__ == "__main__":
