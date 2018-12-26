@@ -601,14 +601,9 @@ def plot_vorbereitung_3sp(ueberschrift, sub_ueberschriften, abszisse, ordinate):
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
     axs = axs.ravel()
-    # TODO: Schleife??
-    # Unterueberschriften der Subplots
     # entsprechende Unterueberschriften der Subplots
     for i in range(3):
         axs[i].set_title(sub_ueberschriften[i])
-#    axs[0].set_title(unterueberschrift1)
-#    axs[1].set_title(unterueberschrift2)
-#    axs[2].set_title(unterueberschrift3)
     # Ueberlappungen vermeiden
     plt.tight_layout(w_pad=3.5, rect=[0, 0, 1, 1.4])
     # Achsenbeschriftungen und Grid

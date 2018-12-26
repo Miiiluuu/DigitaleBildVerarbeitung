@@ -39,8 +39,8 @@ def calculate_fourier(image):
 
 
 # TODO: plot_vorbereitungen 2, 3, 6 oder 9 Subplots in einer Fkt?
-def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
-                          unterueberschrift3, abszisse, ordinate):
+def plot_vorbereitung_3sp(ueberschrift, sub_ueberschriften, abszisse,
+                          ordinate):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
     """
@@ -49,11 +49,9 @@ def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
     axs = axs.ravel()
-    # TODO: Schleife??
-    # Unterueberschriften der Subplots
-    axs[0].set_title(unterueberschrift1)
-    axs[1].set_title(unterueberschrift2)
-    axs[2].set_title(unterueberschrift3)
+    # entsprechende Unterueberschriften der Subplots
+    for i in range(3):
+        axs[i].set_title(sub_ueberschriften[i])
     # Ueberlappungen vermeiden
     plt.tight_layout(w_pad=3.5, rect=[0, 0, 1, 1.4])
     # Achsenbeschriftungen und Grid
@@ -83,8 +81,8 @@ def plot_fourier(power, amplitude, phase, herkunft):
         phase: Phasenbild einer 2D-Fouriertransformierten.
     """
     axs = plot_vorbereitung_3sp(f'''Fouriertransformation {herkunft}''',
-                                'Leistungsspektrum',
-                                'Amplitudenbild', 'Phasenbild',
+                                ['Leistungsspektrum',
+                                 'Amplitudenbild', 'Phasenbild'],
                                 '$ν_{x}/ν_{Sx}$', '$ν_{y}/ν_{Sy}$')
     # Leistungsspektrum
     axs[0].imshow(power, cmap='gray', norm=LogNorm(),
