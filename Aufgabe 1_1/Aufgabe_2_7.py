@@ -38,15 +38,14 @@ def calculate_fourier(image):
     return fourier_image, power, amplitude, phase
 
 
-# TODO: plot_vorbereitungen 2, 3 oder 9 Subplots in einer Fkt?
-# TODO: warum ist Ueberschrift so weit oben?
+# TODO: plot_vorbereitungen 2, 3, 6 oder 9 Subplots in einer Fkt?
 def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
                           unterueberschrift3, abszisse, ordinate):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
     """
     # Erstellen von (drei) Subplots:
-    fig, axs = plt.subplots(1, 3, figsize=(10, 10), facecolor='w')
+    fig, axs = plt.subplots(1, 3, figsize=(10, 8), facecolor='w')
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
     axs = axs.ravel()
@@ -55,7 +54,8 @@ def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     axs[0].set_title(unterueberschrift1)
     axs[1].set_title(unterueberschrift2)
     axs[2].set_title(unterueberschrift3)
-    fig.subplots_adjust(hspace=0.5, wspace=0.5)
+    # Ueberlappungen vermeiden
+    plt.tight_layout(w_pad=3.5, rect=[0, 0, 1, 1.4])
     # Achsenbeschriftungen und Grid
     ticks = np.linspace(-0.5, 0.5, 11)
     for i in range(3):

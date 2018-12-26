@@ -591,14 +591,14 @@ def calculate_fourier(image):
     return fourier_image, power, amplitude, phase
 
 
-# TODO: warum ist Ueberschrift so weit oben?
+# TODO: plot_vorbereitungen 2, 3, 6 oder 9 Subplots in einer Fkt?
 def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
                           unterueberschrift3, abszisse, ordinate):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
     """
     # Erstellen von (drei) Subplots:
-    fig, axs = plt.subplots(1, 3, figsize=(10, 10), facecolor='w')
+    fig, axs = plt.subplots(1, 3, figsize=(10, 8), facecolor='w')
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
     axs = axs.ravel()
@@ -607,7 +607,8 @@ def plot_vorbereitung_3sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     axs[0].set_title(unterueberschrift1)
     axs[1].set_title(unterueberschrift2)
     axs[2].set_title(unterueberschrift3)
-    fig.subplots_adjust(hspace=0.5, wspace=0.5)
+    # Ueberlappungen vermeiden
+    plt.tight_layout(w_pad=3.5, rect=[0, 0, 1, 1.4])
     # Achsenbeschriftungen und Grid
     ticks = np.linspace(-0.5, 0.5, 11)
     for i in range(3):
@@ -829,6 +830,116 @@ def make_hochpassfilter(image, anteil, pixel_mitte):
     # inverser Kreis- ist Hochpassfilter
     filter_hochpass = 1 - filter_kreis
     return filter_hochpass
+
+
+def make_graukeil(anz_pixel, anz_grauwerte):
+    """ Erstellt einen linearen (quadratischen) Graukeil (mit bestimmter
+        Anzahl Grauwerte).
+
+        Parameter:
+        ----------
+        anz_pixel: Anzahl an Pixeln in 1D: bestimmt Groeße des Graukeils.
+
+        anz_grauwerte: Anzahl der Grauwerte, die im Graukeil enthalten sein
+        sollen.
+    """
+    graukeil = np.ones((anz_pixel, anz_pixel)) * np.arange(anz_grauwerte)
+    return graukeil
+
+
+def make_kennlinien(function_unten, function_oben, anz_grauwerte):
+    """ Erstellt eine Look-up-Table mit verschiedenen Kennlinien aus der
+        Vorlesung, Folie 111 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung,
+        mit einer bestimmten Anzahl an Grauwerten.
+
+        Parameter:
+        ----------
+        function_oben: obere Grenze der Grauwerte fuer binarisierte Kennlinie.
+
+        function_unten: untere Grenze der Grauwerte fuer binarisierte
+        Kennlinie.
+
+        anz_grauwerte: Anzahl der Grauwerte, die in Transformation (Kennlinien)
+        enthalten sein sollen.
+    """
+    # Funktion
+    function = np.arange(anz_grauwerte)
+    # Transformationsfunktion (Kennlinien erzeugen)
+    # linear
+    kennlinie_linear = function
+    # negativ linear
+    kennlinie_negativ = (anz_grauwerte - 1) - function
+    # quadratisch
+    kennlinie_quadr = function**2 / (anz_grauwerte - 1)
+    # Wurzel
+    kennlinie_sqrt = np.sqrt(anz_grauwerte * function)
+    # binarisiert
+    kennlinie_binaer = (function >= function_unten) * \
+                       (function <= function_oben) * anz_grauwerte
+    # Gauß:
+    # Standardabweichung fuer Gaußverteilung
+    std = 85
+    # Mittelwert fuer Gaußverteilung
+    mue = 0
+    kennlinie_gauss = 258 - (54942 / (np.sqrt(2 * np.pi)) * std) * \
+        np.exp(-(function - mue)**2 / (2 * std**2))
+    return [kennlinie_linear, kennlinie_negativ, kennlinie_quadr,
+            kennlinie_sqrt, kennlinie_binaer, kennlinie_gauss]
+
+
+def use_kennlinien(graukeil, kennlinien):
+    """ wendet Kennlinien auf linearen Graukeil (derselben Größe) an.
+
+        Parameter:
+        ----------
+        graukeil: Graukeil, auf den jeweils Kennlinien angewendet werden.
+
+        kennlinien: Transformationsfunktionen (Kennlinien), die auf linearen
+        Graukeil angewendet werden.
+        """
+    # (jeweils fuer jede Kennlinie) jeden Pixel einzeln durchgehen
+    graukeile = []
+    for kennlinie in kennlinien:
+        graukeil_kennlinie = np.zeros_like(graukeil)
+        for x in range(len(graukeil)):
+            for y in range(len(graukeil)):
+                graukeil_kennlinie[y, x] = kennlinie[np.int
+                                                    (round(graukeil[y, x]))]
+        graukeile.append(graukeil_kennlinie)
+    return graukeile
+
+
+def plot_vorbereitung_6sp(ueberschrift):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
+        Ueberschrift, einzelnen Subplots etc. """
+    # Erstellen von (sechs) Subplots:
+    fig, axs = plt.subplots(2, 3, figsize=(13, 10), facecolor='w')
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    # TODO: Abstaende der Subplots besser machen
+    # Ueberlappungen vermeiden
+    plt.tight_layout(rect=[0, 0.1, 0.9, 0.95])
+    axs = axs.ravel()
+    return axs
+
+
+def plot_graukeile_transform(graukeile):
+    """ Plot der einzelnen Graukeile nach Anwendung der einzelnen
+        Kennlinien (= transformiert).
+    """
+    # Erstellung einzelner Subplots
+    axs = plot_vorbereitung_6sp('Die Auswirkung verschiedener Kennlinien')
+    # Ueberschriften der einzelnen Subplots
+    # TODO: in Schleife?
+    axs[0].set_title("Linear")
+    axs[1].set_title("Negativ linear")
+    axs[2].set_title("Quadratisch")
+    axs[3].set_title("Wurzel")
+    axs[4].set_title("Binarisiert")
+    axs[5].set_title("Gauss")
+    for i in range(6):
+        axs[i].imshow(graukeile[i], cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
@@ -1130,6 +1241,25 @@ def aufgabe_2_11(szinti, pixel, pixel_quadrant):
         # d.h. strukturreiche/detailreiche Elemente gut zu sehen
         # aber dafuer sind niedrige Frequenzen, welche homogene Bereiche des
         # Bildes, kontinuierliche (Grauwert)uebergaenge darstellen, weg
+        
+
+def aufgabe_3_1():
+    """ Programmiert einen linearen Graukeil (mit 256 Grauwerten) und wendet
+        die Kennlinien aus der Vorlesung, Folie 111 aus dem Modul MF-MRS_14
+        Digitale Bildverarbeitung darauf an.
+    """
+    print("")
+    print("Aufgabe 3.1:")
+    print("")
+    # Graukeil erzeugen
+    graukeil = make_graukeil(256, 256)
+    # erzeuge Kennlinien
+    kennlinien = make_kennlinien(100, 150, 256)
+    # einzelnen Kennlinien auf den linearen Graukeil anwenden und einzelne
+    # transformierten Graukeile abspeichern
+    graukeile = use_kennlinien(graukeil, kennlinien)
+    # Plot der einzelnen transformierten Graukeile
+    plot_graukeile_transform(graukeile)
 
 
 def aufgabe_3_2(szinti, pixel, pixel_quadrant):
@@ -1187,6 +1317,8 @@ def main():
     aufgabe_2_10(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.11
     aufgabe_2_11(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.1
+    aufgabe_3_1()
     # Aufruf Aufgabe 3.2
     aufgabe_3_2(szinti, pixel, pixel_quadrant)
 
