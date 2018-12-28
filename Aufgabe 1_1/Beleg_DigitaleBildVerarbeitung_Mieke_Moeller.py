@@ -955,7 +955,7 @@ def make_binfilter():
     return binfilter
 
 
-def use_filter_image(image, filter_art=None):
+def use_filter3x3_image(image, filter_art=None):
     """ Anwendung eines 3x3-Filters auf ein Bild 'image'.
 
         Parameter:
@@ -1026,7 +1026,78 @@ def plot_vorbereitung_8sp(ueberschrift, sub_ueberschriften,
         axs[i].set_title(sub_ueberschrift_grau)
         axs[i].set_xlabel(abszisse)
         axs[i].set_ylabel(ordinate)
-    return axs 
+    return axs
+
+
+def make_sobelfilter_x_y():
+    """ Erstellung eines 3x3-Sobelfilters, einzeln zur Kantenextraktion in x-
+        und in y-Richtung.
+    """
+    # in x-Richtung
+    sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    # in y-Richtung
+    sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+    return sobel_x, sobel_y
+
+
+def filter_sobel_image(image):
+    """ Anwendung eines 3x3-Sobel-Filters auf ein Bild 'image'.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    # Erstellen der Sobelfilter in x- und y-Richtung
+    sobel_x, sobel_y = make_sobelfilter_x_y()
+    # Anwendung der Sobelfilter in x- und y-Richtung auf das 'image'
+    image_sobel_x = use_filter3x3_image(image, sobel_x)
+    image_sobel_y = use_filter3x3_image(image, sobel_y)
+    # Bildung des Gradienten: Wirkung des gesamten Filters (sowohl x- als auch
+    # y-Richtung), entsprechend Vorlesung Folien 154f des Modul
+    # MF-MRS_14 Digitale Bildverarbeitung)
+    image_sobel_ges = np.abs(image_sobel_x) + np.abs(image_sobel_y)
+    return image_sobel_ges
+
+
+# TODO: Richtig?
+def robertsfilter(image):
+    """ Anwendung eines Roberts-Filters auf ein Bild 'image'.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    image_robert = np.zeros((len(image), len(image)))
+    # Berechnung nach Differenzverfahren entsprechend der Vorlesung,
+    # Folie 43f aus dem Modul MF-MRS_14 Digitale Bildverarbeitung
+    for x in range(len(image)-1):
+        for y in range(len(image)-1):
+            image_robert[y, x] = np.abs(image[y, x] - image[y+1, x+1]) + \
+                                 np.abs(image[y, x+1] - image[y+1, x])
+    return image_robert
+
+
+def make_laplacefilter():
+    """ Erstellung eines Laplacefilters mit einer 8er-Nachbarschaft.
+    """
+    laplace = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
+    return laplace
+
+
+# oefter verwendet?
+def plot(ueberschrift, image):
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Figure mit
+        Ueberschriften etc.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte, welche im Plot dargestellt werden.
+    """
+    fig = plt.figure(figsize=(6, 7))
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(ueberschrift, fontsize=16)
+    plt.imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
@@ -1309,7 +1380,7 @@ def aufgabe_2_11(szinti, pixel, pixel_quadrant):
     print("")
     # Erzeugung Tiefpassfilter (in Groeße des Originalbildes)
     filter_hochpass = make_hochpassfilter(szinti, (3 / 4), pixel_quadrant)
-    # Anwendung des Tiefpassfilters auf Originalbild
+    # Anwendung des Hochpassfilters auf Originalbild
     szinti_gefiltert = use_filter(szinti, filter_hochpass)
     # Erstellung Plots fuer graphische Darstellung Originalbild und
     # gefiltertes Bild
@@ -1352,7 +1423,8 @@ def aufgabe_3_1():
 def aufgabe_3_2(szinti, pixel, pixel_quadrant):
     """ Fuehrt nacheinander zunaechst eine Rotation um 90° (im positiven
         Drehsinne) und anschließend eine Scherung auf das Bild aus
-        Aufgabe 1.1 durch. """
+        Aufgabe 1.1 durch.
+    """
     print("")
     print("Aufgabe 3.2:")
     print("")
@@ -1388,11 +1460,11 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     binfilter = make_binfilter()
     # Anwendung Filter auf das Bild aus Aufgabe 1.1:
     # Mittelwertfilter
-    szinti_filter_avg = use_filter_image(szinti, mittelwertfilter)
+    szinti_filter_avg = use_filter3x3_image(szinti, mittelwertfilter)
     # Medianfilter
-    szinti_filter_med = use_filter_image(szinti)
+    szinti_filter_med = use_filter3x3_image(szinti)
     # Binomialfilter
-    szinti_filter_bin = use_filter_image(szinti, binfilter)
+    szinti_filter_bin = use_filter3x3_image(szinti, binfilter)
     # Erstellung Grauwertprofile entlang y-Linie = 60:
     # fuer Originalbild aus Aufgabe 1.1
     grauprofil_60_szinti = extraktion_aus_array(szinti, pixel_quadrant - 60)
@@ -1447,6 +1519,68 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
         # Mittelwertfilter jedem Pixel das
         # selbe Gewicht Eins gibt (dadurch nicht mehr so verschmiert? bzw keine
         # Artefakte)
+        
+
+def aufgabe_3_4(szinti, pixel, pixel_quadrant):
+    """ Anwendung des Sobel- und Robertsfilters auf das Bild aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 3.4:")
+    print("")
+    # Anwendung Sobelfilter aufs Bild aus Aufgabe 1.1
+    szinti_sobel_ges = filter_sobel_image(szinti)
+    # Anwendung Roberts-Filter aufs Bild aus Aufgabe 1.1
+    szinti_robert = robertsfilter(szinti)
+    # Subplots erstellen fuer graphische Darstellung
+    ax1, ax2 = plot_vorbereitung_2sp("verschiedene Filter zur " +
+                                     "Kantenextraktion",
+                                     "Sobel-Filter", "Roberts-Filter")
+    # Anwendung Sobelfilter
+    ax1.imshow(szinti_sobel_ges, cmap='gray', extent=[-128, 128, -128, 128])
+    # Anwendung Robertsfilter
+    ax2.imshow(szinti_robert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
+    # Interpretation:
+        # Kantenextraktion:
+        # dafuer Bildung der ersten Ableitung aus zwei orthogonalen Richtungen
+        # und Gradientenbildbestimmung (siehe Vorlesung)
+        # Sobel drei Zeilen: Gradient ueber 3 Zeilen
+        # Robertsfilter besitzt kleinere Matrix (2x2),
+        # bezieht fuer
+        # Kantenextraktion
+        # kleineren Bereich mit ein, d.h. Sobel rauschunempfindlicher
+        # Robert bildet Differenzen in Richtungen 45° und 135° (diagonal)
+        # Sobel bildet Differenzen in horizontaler und vertikaler Richtungen
+        # Sobel und Robert haben Richtungsabhaengigkeit
+        # aber: fuer Kantenfilter gilt Isotropie: Filterantwort soll nicht von
+        # der Richtung der Kante abhaengen: beide Filter sehen in etwa gleich
+        # aus
+    
+    
+def aufgabe_3_5(szinti, pixel, pixel_quadrant):
+    """ Anwendung des Laplace-Filters (mit einer 8er Nachbarschaft) auf das
+        Bild aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 3.5:")
+    print("")
+    # Erstellung Laplace-Filter mit 8er Nachbarschaft
+    laplacefilter = make_laplacefilter()
+    # Anwendung Laplacefilter aufs Bild aus Aufgabe 1.1
+    szinti_laplace = use_filter3x3_image(szinti, laplacefilter)
+    # Plot des Bildes aus Aufgabe 1.1 nach Anwendung eines Laplacefilters
+    # mit einer 8er Nachbarschaft
+    plot('Anwendung eines Laplacefilters (8er Nachbarschaft) \n'
+         'auf das Bild aus Aufgabe 1.1', szinti_laplace)
+    # Interpretation:
+        # Laplace: Summe partielle zweite Ableitungen nach x und y Richtung
+        # strukturreiche Bereiche werden hervorgehoben
+        # (da krümmungsempfindlicher), weniger strukturreiche
+        # Bereiche unterdrueckt
+        # Hochpasseigenschaften (niedrige Frequenzen unterdrueckt)
+        # Unterschiede zu Gradientenfiltern (aus Aufgabe 3.4): nutzen 2.
+        # Ableitung statt erster,
+        # welche rauschanfaelliger ist als bei Nutzen erster Ableitung
 
 
 def main():
@@ -1483,6 +1617,10 @@ def main():
     aufgabe_3_2(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 3.3
     aufgabe_3_3(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.4
+    aufgabe_3_4(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.5
+    aufgabe_3_5(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:

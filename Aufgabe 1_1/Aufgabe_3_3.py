@@ -29,7 +29,7 @@ def make_binfilter():
     return binfilter
 
 
-def use_filter_image(image, filter_art=None):
+def use_filter3x3_image(image, filter_art=None):
     """ Anwendung eines 3x3-Filters auf ein Bild 'image'.
 
         Parameter:
@@ -111,11 +111,11 @@ def main():
     binfilter = make_binfilter()
     # Anwendung Filter auf das Bild aus Aufgabe 1.1:
     # Mittelwertfilter
-    szinti_filter_avg = use_filter_image(szinti, mittelwertfilter)
+    szinti_filter_avg = use_filter3x3_image(szinti, mittelwertfilter)
     # Medianfilter
-    szinti_filter_med = use_filter_image(szinti)
+    szinti_filter_med = use_filter3x3_image(szinti)
     # Binomialfilter
-    szinti_filter_bin = use_filter_image(szinti, binfilter)
+    szinti_filter_bin = use_filter3x3_image(szinti, binfilter)
     # Erstellung Grauwertprofile entlang y-Linie = 60:
     # fuer Originalbild aus Aufgabe 1.1
     grauprofil_60_szinti = Aufgabe_2_1.extraktion_aus_array(szinti,

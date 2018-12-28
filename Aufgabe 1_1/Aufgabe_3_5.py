@@ -2,13 +2,15 @@
     Aufgabe 3.5:
     Anwendung des Laplace-Filters (mit einer 8er Nachbarschaft) auf das
     Bild aus Aufgabe 1.1.
+
+    @author: Mieke Möller
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import Aufgabe_1_1
-# TODO: doppelte Plot-Funktion? Figuresize
+import Aufgabe_3_3
 
 
 def make_laplacefilter():
@@ -18,34 +20,9 @@ def make_laplacefilter():
     return laplace
 
 
-def filter3x3_image(image, filter_art):
-    """ Anwendung eines 3x3-Filters auf ein Bild 'image'.
-
-        Parameter:
-        ----------
-        image: Array, Eingabewerte.
-
-        filter_art: Beschreibt 3x3-Filter (-Array), welcher auf das Bild
-        image angewendet wird.
-    """
-    # Schleife: jeden Pixel einzeln durchgehen (bis auf aeußersten Pixel
-    # (-Rand)), da dieser von Filter nicht beruecksichtigt wird:
-    # aeußeren Rand-Pixel werden auf Null gesetzt
-    image_gefiltert = np.zeros((len(image), len(image)))
-    for x in range(1, len(image)-1):
-        for y in range(1, len(image)-1):
-            # Filterbereich, der einzeln (fuer jeden Pixel) wirksam wird (3x3)
-            bereich = image[y-1:y+2, x-1:x+2]
-            # Anwendung Filter auf Filterbereich
-            bereich_filter = bereich * filter_art
-            # Fuellen des entsprechenden Pixels mit neuem gefilterten Wert
-            image_gefiltert[y, x] = np.sum(bereich_filter)
-    return image_gefiltert
-
-
 def plot(ueberschrift, image):
-    """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
-        entsprechenden Subplots, Ueberschriften etc.
+    """ Vorbereitung fuer anschließenden Plot: Erstellung Figure mit
+        Ueberschriften etc.
 
         Parameter:
         ----------
@@ -55,6 +32,7 @@ def plot(ueberschrift, image):
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
     plt.imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.show()
 
 
 def main():
@@ -63,7 +41,7 @@ def main():
     # Erstellung Laplace-Filter mit 8er Nachbarschaft
     laplacefilter = make_laplacefilter()
     # Anwendung Laplacefilter aufs Bild aus Aufgabe 1.1
-    szinti_laplace = filter3x3_image(szinti, laplacefilter)
+    szinti_laplace = Aufgabe_3_3.use_filter3x3_image(szinti, laplacefilter)
     # Plot des Bildes aus Aufgabe 1.1 nach Anwendung eines Laplacefilters
     # mit einer 8er Nachbarschaft
     plot('Anwendung eines Laplacefilters (8er Nachbarschaft) \n'
@@ -72,8 +50,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# TDO: externe Console bzw Windowkonsole funktioniert nicht?
 
 # Interpretation:
     # Laplace: Summe partielle zweite Ableitungen nach x und y Richtung
