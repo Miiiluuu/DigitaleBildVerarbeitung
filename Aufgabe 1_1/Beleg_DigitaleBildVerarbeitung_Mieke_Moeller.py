@@ -15,6 +15,7 @@
 # TODO: welche Fkt sind wirklich nuetzlich?
 # TODO: Plotfkt: (mit norm, extent usw...)
 # TODO: Tritt irgendwo was doppelt auf?
+# funktion mit der aktuellen Aufgabenstellung?
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -1100,6 +1101,236 @@ def plot(ueberschrift, image):
     plt.show()
 
 
+def use_schwellwert(image, schwelle_unten, schwelle_oben):
+    """ Funktion segmentiert mittels Schwellwertverfahren und a priori
+        Kenntnisse einen bestimmten Bereich.
+        Es wird eine Maske erstellt, diese enthaelt:
+        Nullen: dieser Pixel wird als Nichtobjekt klassifiziert.
+        Andere Grauwerte: dieser Pixel wird als Objekt klassifiziert.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        schwelle_unten: unterer Schwellwert. Ab dieser Graustufe wird
+        Grauwertverteilung als Objekt gezaehlt.
+
+        schwelle_oben: oberer Schwellwert. Bis zu dieser Graustufe wird
+        Grauwertverteilung als Objekt gezaehlt.
+    """
+    # Anlegen eines Null-Arrays, welches Maske enthaelt:
+    image_maske = np.zeros_like(image)
+    # Schwellwertbedingung: innerhalb dieses Intervalls werden entsprechende
+    # Pixel als Objekt gezaehlt und in die Maske uebernommen
+    intervall_schwellen = (image >= schwelle_unten) * (image <= schwelle_oben)
+    image_maske[intervall_schwellen] = image[intervall_schwellen]
+    return image_maske
+
+
+def make_logic_image(image, schwelle):
+    """ Funktion erzeugt aus einem Bild ein logisches Bild (Binaerbild), indem
+        ein bestimmter Bereich mittels des Schwellwertverfahrens separiert
+        wird. Dabei werden a priori Kenntnisse vorausgesetzt
+        (Grauwerthistogramm u.Ä.).
+        Beinhaltet Pixelklassifikation: Einteilung in Objekt- (enthaelt Einsen)
+        und Nichtobjektpixel (enthaelt Nullen).
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        schwelle: Schwellwert. Ab naechstgroeßeren Graustufe wird
+        Grauwertverteilung als Objekt gezaehlt.
+    """
+    image_maske = np.zeros_like(image)
+    image_maske[schwelle < image] = 1
+    return image_maske
+
+
+def extract_values(image, value):
+    """ Funktion speichert aus einem Array die einander zugehoerigen (x- und
+         y-) Koordinaten (als Meshgrid), welche einen bestimmten Wert 'value'
+         enthalten. Dabei wird der (virtuelle) Ursprung in das Zentrum des
+         Bildes gelegt.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        value: bestimmter Wert, anhand dessen Filterung der Werte.
+    """
+    # Zentrum des Bildes
+    center = len(image) // 2
+    # Abspeichern der einander zugehoerigen Koordinaten
+    koord_x, koord_y = np.meshgrid(np.arange(-center, center),
+                                   np.arange(center, -center, step=-1))
+    # Rausfilterung der Untergrundwerte nach einen bestimmten Wert 'value'
+    koord_x = koord_x[image == value]
+    koord_y = koord_y[image == value]
+    return koord_x, koord_y
+
+
+def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
+    """ Plot eines 2D-Histogramms mit entsprechender Ueberschrift,
+        Achsenbeschriftung, Farbskala etc.
+    """
+    plt.figure(figsize=(10, 6))
+    # Hinzufuegen der Ueberschrift zum Plot
+    plt.suptitle(ueberschrift, fontsize=16)
+    # Achsenbeschriftungen
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
+    # TODO: warum genau diese Werte? kann nicht vorausgesetzt werden?
+    counts, xedges, yedges, image = plt.hist2d(werte1, werte2, bins=180,
+                                               range=[[0, 180], [-64, 64]])
+    # Ueberlappungen vermeiden
+    plt.tight_layout(rect=[0, 0.03, 1, 0.8])
+    # TODO: Colorbarbeschriftung
+    plt.colorbar(image)
+    plt.show()
+
+
+def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
+    """ Funktion leistet Vorverarbeitung des Bildes aus Aufgabe 1.1 fuer
+        anschließende Kantenorientierte Segmentierung (Hough-Transformation).
+        Kanten werden extrahiert durch Anwendung verschiedener Filter und
+        Aehnliches.
+    """
+    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
+    # Extraktion des rechten unteren Quadranten
+    quadrant_vier = extract(szinti, pixel_quadrant, pixel, pixel_quadrant,
+                            pixel)
+    # Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete, sodass
+    # Löcher in Flächen teilweise aufgefuellt
+    quadrant_vier = use_filter3x3_image(quadrant_vier)
+    # Anwendung Sobelfilter aufs Teilbild (Flaechenquelle D) aus Bild
+    # Aufgabe 1.1 zur Kantenextraktion
+    quadrant_vier = filter_sobel_image(quadrant_vier)
+    # 2tes mal Medianfilter anwenden zur Erzeugung zusammenhaengender Gebiete,
+    # sodass Löcher in Flächen teilweise aufgefuellt
+    quadrant_vier = use_filter3x3_image(quadrant_vier)
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    quadrant_vier = make_scale(quadrant_vier)
+    # a priori werden Schwellwertgrenzen festgelegt, wodurch lediglich Kanten
+    # extrahiert werden
+    quadrant_vier_kanten = make_logic_image(quadrant_vier, 160)
+    # Extrahieren (nur) der (x- und y-) Koordinaten, bei denen Bildfunktion
+    # f(x) ungleich 0
+    # (d.h. in neuen Koordinaten-arrays sind lediglich Koordinaten der Kanten
+    # (entsprechen Einsen im logischen Bild) enthalten)
+    koord_x, koord_y = extract_values(quadrant_vier_kanten, 1)
+    return koord_x, koord_y
+
+
+def hough_trafo(koord_x, koord_y):
+    """ Anwenden der Hough-Transformation = Kantenorientierte Segmentierung.
+        Mittels der Hesseschen Normalform fuer Geradengleichungen werden
+        Geraden erkannt (siehe Vorlesung zu Modul MF-MRS_14 Digitale
+        Bildverarbeitung, Folie 202f). Dafuer wird der Normalenvektor vom
+        (virtuellen) Ursprung des Bildes und der zugehoerige Winkel
+        parametrisiert.
+
+        Parameter:
+        ----------
+        koord_x: (x-)Koordinaten einer Bildfunktion f(x, y), fuer die gilt:
+        f(x, y) ungleich 0 .
+
+        koord_y: (y-)Koordinaten einer Bildfunktion f(x, y), fuer die gilt:
+        f(x, y) ungleich 0 .
+    """
+    winkel = []
+    abstaende = []
+    # verschiedene Winkel durchgehen
+    for alpha in np.linspace(0, 180, 180, endpoint=False):
+        # einzelne aktuelle Winkel abspeichern (Anzahl entsprechend Anzahl
+        # der Koordinaten)
+        winkel.append(np.ones(len(koord_x)) * alpha)
+        # Winkel in Bogenmaß umrechen
+        alpha = np.radians(alpha)
+        # Hessesche Normalform der Geradengleichung: Abstaende berechnen
+        abstand = koord_x * np.cos(alpha) + koord_y * np.sin(alpha)
+        # zu aktuellen Winkel alle dazu berechneten Abstaende abspeichern
+        abstaende.append(abstand)
+    # Umwandeln der Listen in Arrays
+    winkel = np.array(winkel).ravel()
+    abstaende = np.array(abstaende).ravel()
+    # Darstellung der verketteten Kanten / durchgezogenen Linien des Dreieckes
+    # als Häufungspunkte im 2D-Histogramm
+    plot_2d_hist("Kantenorientierte Segmentierung \n"
+                 "- Hough-Transformation zur Erkennung der Seiten des \n"
+                 "Dreieckes aus Flaechenquelle D, Aufgabe 1.1 -",
+                 r'Winkel $ϕ/°$', r'Abstand zum Mittelpunkt $d/mm$', winkel,
+                 abstaende)
+    
+    
+def calc_schwerpkt_1d(image):
+    """ Funktion berechnet bestimmte Momente von Bildern und darauf aufbauend
+        (in einer Dimension) den Schwerpunkt dieses Bildes entsprechend
+        Vorlesung zum Modul MF-MRS_14 Digitale Bildverarbeitung, Folie 213f.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+    """
+    moment0 = np.sum(image)
+    x_koord = np.arange(np.shape(image)[1])
+    moment = np.sum(image, axis=0) * x_koord
+    moment = np.sum(moment)
+    # Schwerpunkt in 1D
+    schwerpkt = moment / moment0
+    return schwerpkt
+
+
+def calc_schwerpkt(image, calc_geometric=False):
+    """ Funktion berechnet den Schwerpunkt eines Bildes (in x- und y-Richtung)
+        entsprechend Vorlesung zum Modul MF-MRS_14 Digitale Bildverarbeitung,
+        Folie 213f.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        calc_geometric: Falls dieser Parameter angegeben wird, wird anstatt des
+        geometrischen der Massenschwerpunktes ermittelt.
+    """
+    # falls Berechnung vom geometrischen Schwerpunkt:
+    if calc_geometric:
+        # dafuer wird zuvor zunaechst logisches Bild erzeugt:
+        # Bildfunktion wird auf Eins gesetzt
+        image = make_logic_image(image, 0)
+    # Berechnung vom Schwerpunkt in x-Richtung
+    schwerpkt_x = calc_schwerpkt_1d(image)
+    # Berechnung vom Schwerpunkt in y-Richtung
+    image_t = np.transpose(image)
+    schwerpkt_y = calc_schwerpkt_1d(image_t)
+    return schwerpkt_x, schwerpkt_y
+
+
+def plot_schnittpkt(ueberschrift, image, schnittpkt):
+    """ Funktion erstellt einen Plot mit Ueberschriften, Achsenbeschriftungen
+        und Ähnliches. Es wird ein Bild geplottet mit einem Schnittpunkt
+        bestimmter Geraden.
+
+        Parameter:
+        ----------
+        image: Array, Eingabewerte.
+
+        schnittpkt: enthält Koordinaten (in x- und y-Richtung), die einen
+        Schnittpunkt im geplotten Bild darstellen.
+    """
+    plt.figure(figsize=(10, 7))
+    # Hinzufuegen der Ueberschrift zum Plot
+    plt.suptitle(ueberschrift, fontsize=16)
+    plt.imshow(image, cmap='gray')
+    # x-Koordinate als Vertikale plotten
+    plt.axvline(schnittpkt[0], color="deeppink")
+    # y-Koordinate als Horizontale plotten
+    plt.axhline(schnittpkt[1], color="deeppink")
+    # Ueberlappungen vermeiden
+    plt.tight_layout(rect=[0, 0.03, 1, 0.85])
+    plt.show()
+
+
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
         Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
@@ -1583,6 +1814,72 @@ def aufgabe_3_5(szinti, pixel, pixel_quadrant):
         # welche rauschanfaelliger ist als bei Nutzen erster Ableitung
 
 
+def aufgabe_3_6(szinti, pixel, pixel_quadrant):
+    """ Separierung der Flaechenquelle D im Bild aus Aufgabe 1.1 (mittels
+        Schwellwertverfahren).
+    """
+    print("")
+    print("Aufgabe 3.6:")
+    print("")
+    # vor Anwendung Schwellwertverfahren (a priori) Glaettung mit
+    # Medianfilter zur Erzeugung zusammenhaengender Gebiete, sodass Loecher in
+    # Flächen teilweise aufgefuellt
+    szinti_bearbeitet = use_filter3x3_image(szinti)
+    # aus der a priori Kenntnis von Flaechenquelle D (Parameter siehe
+    # Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Aufgabe 1.1
+    # (Folie 17)) werden aus (geglaetteten) Grauwerthistogramm Schwellwerte
+    # visuell entnommen (sodass Gesamt-segmentierungsfehler möglichst gering)
+    # und so Schwellwertgrenzen festgelegt
+    szinti_bearbeitet = use_schwellwert(szinti_bearbeitet, 50, 100)
+    # Darstellung der separierten Flaechenquelle D (Dreieck)
+    plt.figure()
+    plt.imshow(szinti_bearbeitet, cmap='gray', extent=[-128, 128, -128, 128],
+               vmax=255)
+    plt.show()
+
+
+def aufgabe_3_7(szinti, pixel, pixel_quadrant):
+    """ Extrahieren des rechten unteren Quadranten des Bild aus Aufgabe 1.1
+        (Flaechenquelle D, gleichseitiges Dreieck) als Teilbild. Dabei Durchführung
+        einer Kantenextraktiion mit anschließender Hough-Transformation.
+    """
+    print("")
+    print("Aufgabe 3.7:")
+    print("")
+    # Vorverarbeitung des Bildes: Voraussetzung fuer Hough-Transformation
+    # ist Kantenextraktion
+    koord_x, koord_y = szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant)
+    # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
+    # (und demnach kein Rauschen sind) mittels Hough-Transformation
+    # (siehe Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Folie
+    # 202f):
+    # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
+    # (und demnach kein Rauschen sind)
+    hough_trafo(koord_x, koord_y)
+    
+
+def aufgabe_3_8(szinti, pixel, pixel_quadrant):
+    """ Berechnung des geometrischen und den Massenschwerpunkt fuer ein Objekt,
+        bestehend aus den Flaechenquellen B und C aus Aufgabe 1.1.
+    """
+    print("")
+    print("Aufgabe 3.8:")
+    print("")
+    # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
+    # Extraktion von Flaechenquelle B und C
+    szinti = extract(szinti, 0, pixel, 0, pixel_quadrant)
+    # Berechnung vom geometrischen Schwerpunkt (in x- und y-Richtung)
+    schwerpkt_geo = calc_schwerpkt(szinti, calc_geometric=True)
+    # Einzeichnen des geometrischen Schwerpunktes
+    plot_schnittpkt("geometrischer Schwerpunkt \n"
+                "- innerhalb Bild aus Aufgabe 1.1 -", szinti, schwerpkt_geo)
+    # Berechnung vom Massenschwerpunkt (in x- und y-Richtung)
+    schwerpkt_mass = calc_schwerpkt(szinti)
+    # Einzeichnen des Massenschwerpunktes
+    plot_schnittpkt("Massenschwerpunkt \n"
+                "- innerhalb Bild aus Aufgabe 1.1 -", szinti, schwerpkt_mass)
+
+
 def main():
     # Szintigramm (beschrieben in Vorlesung zu Modul MF-MRS_14 Digitale
     # Bildverarbeitung, siehe Folie 17)  erstellen
@@ -1621,6 +1918,12 @@ def main():
     aufgabe_3_4(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 3.5
     aufgabe_3_5(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.6
+    aufgabe_3_6(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.7
+    aufgabe_3_7(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.8
+    aufgabe_3_8(szinti, pixel, pixel_quadrant)
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:

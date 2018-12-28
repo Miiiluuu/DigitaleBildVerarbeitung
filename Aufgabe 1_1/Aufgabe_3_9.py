@@ -3,6 +3,8 @@
     Extraktion von Flaechenquelle B aus Szintigramm Aufgabe 1.1,
     Bestimmung der Grauwertuebergangsmatrix C(δ=(1,0)) und C(δ=(0,1)) und
     Interpretation.
+
+    @author: Mieke Möller
 """
 
 import numpy as np
@@ -12,6 +14,7 @@ import Aufgabe_1_1
 import Aufgabe_3_7
 import Aufgabe_3_3
 
+
 def medianfilter_5x5(image):
     """ Anwendung eines 5x5-Medianfilters auf ein Bild 'image'.
 
@@ -19,8 +22,8 @@ def medianfilter_5x5(image):
         ----------
         image: Array, Eingabewerte.
     """
-    # Schleife: jeden Pixel einzeln durchgehen (bis auf aeußersten Pixel
-    # (-Rand)), da dieser von Filter nicht beruecksichtigt wird:
+    # Schleife: jeden Pixel einzeln durchgehen (bis auf aeußeren (Rand-)
+    # Pixel, da dieser von Filter nicht beruecksichtigt werden:
     # aeußeren Rand-Pixel werden auf Null gesetzt
     image_gefiltert = np.zeros((len(image), len(image)))
     for x in range(2, len(image)-2):
@@ -45,7 +48,7 @@ plt.suptitle("Originalbild", fontsize=16)
 plt.imshow(szinti, cmap='gray')
 # mehrmalige Anwendung von Medianfiltern (verschiedener Groeße), um
 # Bildrauschen (durch radioaktivem Zerfall) zu reduzieren, aber Lage
-# und Steilheit vom Bild erhalten!
+# und Steilheit vom Bild erhalten! (Kombination durch Ausprobieren)
 # zweimaliges Anwenden eines 5x5 Medianfilters
 for i in range(2):
     szinti = medianfilter_5x5(szinti)
@@ -64,4 +67,3 @@ plt.imshow(szinti, cmap='gray')
 #if __name__ == "__main__":
 #    main()
 
-# TDO: externe Console bzw Windowkonsole funktioniert nicht?
