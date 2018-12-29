@@ -28,8 +28,7 @@ def erstelle_grauwerthist(werte, herkunft):
     ax1, ax2 = Aufgabe_2_1.plot_vorbereitung_2sp(f'''Grauwerthistogramm ''' + 
                     f'''fuer {herkunft}''', 'logarithmische Skala',
                     f'''gekuerzte Ordinatenachse''', r'$f$',
-                    f''''Häufigkeitsverteilung $h(f)$''', r'$f$',
-                    f'''Häufigkeitsverteilung $h(f)$''')
+                    f''''Häufigkeitsverteilung $h(f)$''')
     ax1.hist(werte, bins=256, density=True, log=True)
     ordinate, _, _ = ax2.hist(werte, bins=256, density=True)
     # Ordinatenwerte sortieren

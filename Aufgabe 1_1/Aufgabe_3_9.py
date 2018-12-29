@@ -54,15 +54,45 @@ for i in range(2):
     szinti = medianfilter_5x5(szinti)
 # zweimaliges Anwenden eines 3x3 Medianfilters
 for i in range(2):
-    szinti = Aufgabe_3_3.filter_image(szinti)
+    szinti = Aufgabe_3_3.use_filter3x3_image(szinti)
+# Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+szinti = Aufgabe_1_1.make_scale(szinti)
 # Kontrolldarstellung
 plt.figure()
 # Hinzufuegen der Ueberschrift zum Plot
 plt.suptitle("gefiltertes Bild", fontsize=16)
 plt.imshow(szinti, cmap='gray')
 
-  
-    
+
+## Szinti-Grauwerte in Integer umwandeln
+#szinti = int_(szinti)
+# Erzeugen der Uebergangsmatrix
+ubergange = np.zeros((256, 256)) 
+# Pixel einzeln durchgehen
+# mit Vektor C(δ=(1,0))
+for y in range(len(szinti)):
+    for x in range(len(szinti)-1):
+            ubergange[int(szinti[y, x]), int(szinti[y, x+1])] += 1
+# Plot der Uebergangsmatix
+fig = plt.figure(figsize=(6, 7))
+# Hinzufuegen der Ueberschrift zum Plot
+fig.suptitle("Uebergangsmatrix", fontsize=16)
+plt.imshow(ubergange, cmap='gray')
+plt.show()
+        
+
+## Pixel einzeln durchgehen
+## mit Vektor C(δ=(0,1))
+#for x in range(len(szinti)):
+#    for y in range(len(szinti)-1):
+#            ubergange[int(szinti[y, x]), int(szinti[y+1, x])] += 1
+## Plot der Uebergangsmatix
+#fig = plt.figure(figsize=(6, 7))
+## Hinzufuegen der Ueberschrift zum Plot
+#fig.suptitle("Uebergangsmatrix", fontsize=16)
+#plt.imshow(ubergange, cmap='gray')
+#plt.show()
+
     
 #if __name__ == "__main__":
 #    main()
