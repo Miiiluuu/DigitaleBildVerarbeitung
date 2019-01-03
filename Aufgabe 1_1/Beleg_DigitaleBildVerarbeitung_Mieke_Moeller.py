@@ -44,6 +44,8 @@ def make_scale(image):
     skal = weiß / hoechster_grauwert
     # Skalierungsfaktor auf gesamtes Szintigramm anwenden
     image *= skal
+    # Zuordnung auf 255 Grauwerte
+    image = np.int_(image)
     return image
 
 
@@ -1848,7 +1850,8 @@ def aufgabe_3_7(szinti, pixel, pixel_quadrant):
     print("")
     # Vorverarbeitung des Bildes: Voraussetzung fuer Hough-Transformation
     # ist Kantenextraktion
-    koord_x, koord_y = szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant)
+    koord_x, koord_y = szinti_vorverarbeitung_3_7(szinti, pixel,
+                                                  pixel_quadrant)
     # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
     # (und demnach kein Rauschen sind) mittels Hough-Transformation
     # (siehe Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Folie
@@ -1881,6 +1884,9 @@ def aufgabe_3_8(szinti, pixel, pixel_quadrant):
 
 
 def main():
+    # Zeit messen:
+    # fuer Zeitmessung:
+    t1 = time.time()
     # Szintigramm (beschrieben in Vorlesung zu Modul MF-MRS_14 Digitale
     # Bildverarbeitung, siehe Folie 17)  erstellen
     szinti, pixel, pixel_quadrant = make_szinti()
@@ -1924,14 +1930,16 @@ def main():
     aufgabe_3_7(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 3.8
     aufgabe_3_8(szinti, pixel, pixel_quadrant)
+    # fuer Zeitmessung:
+    t2 = time.time()
 
 #    # Zeit messen:
 #    # fuer Zeitmessung:
 #    t1 = time.time()
 #    # fuer Zeitmessung:
 #    t2 = time.time()
-#    # Ausgabe Zeitanspruch des Programms
-#    print("Die Zeit dieses Programmes lautet:", t2 - t1)
+    # Ausgabe Zeitanspruch des Programms
+    print("Die Zeit dieses Programmes lautet:", t2 - t1, "s")
 
 
 if __name__ == "__main__":

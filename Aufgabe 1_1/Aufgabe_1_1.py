@@ -29,6 +29,8 @@ def make_scale(image):
     skal = weiß / hoechster_grauwert
     # Skalierungsfaktor auf gesamtes Szintigramm anwenden
     image *= skal
+    # Zuordnung auf 255 Grauwerte
+    image = np.int_(image)
     return image
 
 

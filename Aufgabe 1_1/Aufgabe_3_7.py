@@ -78,7 +78,7 @@ def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
     plt.show()
 
 
-def szinti_vorverarbeitung(szinti, pixel, pixel_quadrant):
+def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     """ Funktion leistet Vorverarbeitung des Bildes aus Aufgabe 1.1 fuer
         anschließende Kantenorientierte Segmentierung (Hough-Transformation).
         Kanten werden extrahiert durch Anwendung verschiedener Filter und
@@ -156,7 +156,8 @@ def main():
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
     # Vorverarbeitung des Bildes: Voraussetzung fuer Hough-Transformation
     # ist Kantenextraktion
-    koord_x, koord_y = szinti_vorverarbeitung(szinti, pixel, pixel_quadrant)
+    koord_x, koord_y = szinti_vorverarbeitung_3_7(szinti, pixel,
+                                                  pixel_quadrant)
     # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
     # (und demnach kein Rauschen sind) mittels Hough-Transformation
     # (siehe Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Folie
