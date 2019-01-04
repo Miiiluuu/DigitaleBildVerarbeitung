@@ -59,13 +59,16 @@ def erstellung_bitebenen(image):
 
 # TODO: fuer das Bild aus Aufgabe 1.1 als Bezeichnung ok? 
 # (lieber {aufgabe} als Variable?)
-def infogehalt_einzelne_bitebenen(image):
+def infogehalt_einzelne_bitebenen(image, herkunft):
     """ Berechnet fuer alle Bitebenen (des Bildes aus Aufgabe 1.1) den
          mittleren Informationsgehalt pro Pixel.
 
         Parameter:
         ----------
         image: Liste der einzelnen Bitebenen, Eingabewerte.
+        
+        herkunft: bezeichnet jenes Bild, welches fuer Aufgabenstellung
+        genutzt wird.
     """
     info_bit = []
     for i in range(7, -1, -1):
@@ -77,8 +80,8 @@ def infogehalt_einzelne_bitebenen(image):
         info_bit.append(info)
     # Ausgabe des Informationsgehaltes pro Pixel fuer die einzelnen
     # Bitebenen des Bildes aus Aufgabe 1.1 mit PrettyTable
-    print('Der mittlere Informationsgehalt pro Pixel fuer das Bild aus ' +
-          'Aufgabe 1.1 betraegt:')
+    print(f'''Der mittlere Informationsgehalt pro Pixel fuer das Bild '''+ 
+          f'''aus {herkunft} betraegt:''')
     # Erstellung PrettyTable
     x = PrettyTable()
     x.field_names = ['Bitebene', 'mittlerer Informationsgehalt in ' +
@@ -95,7 +98,7 @@ def main():
     # Erstellung Bitebenen
     ebene = erstellung_bitebenen(szinti)
     # Berechnung mittlerer Informationsgehalt pro Pixel
-    infogehalt_einzelne_bitebenen(ebene)
+    infogehalt_einzelne_bitebenen(ebene, "Aufgabe 1.1")
 
 
 if __name__ == "__main__":

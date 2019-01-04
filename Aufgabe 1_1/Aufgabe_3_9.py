@@ -1,7 +1,7 @@
 """
     Aufgabe 3.9:
     Extraktion von Flaechenquelle B aus Szintigramm Aufgabe 1.1,
-    Bestimmung der Grauwertuebergangsmatrix C(δ=(1,0)) und C(δ=(0,1)) und
+    Bestimmung der Grauwertuebergangsmatrix C(δ=(1,0)), C(δ=(0,1)) und
     Interpretation.
 
     @author: Mieke Möller
@@ -69,8 +69,8 @@ def szinti_vorbereitung_3_9(szinti, pixel, pixel_quadrant):
 #    plt.suptitle("gefiltertes Bild", fontsize=16)
 #    plt.imshow(szinti, cmap='gray')
     return szinti
-    
-    
+
+
 def make_uebergangsmatrix(image):
     """ Erzeugt eine Uebergangsmatrix mit den C(δ=(1,0)) und C(δ=(0,1))
         fuer ein Bild 'image'.
@@ -80,7 +80,7 @@ def make_uebergangsmatrix(image):
         image: Array, Eingabewerte.
     """
     # Erzeugen der Uebergangsmatrix
-    ubergange = np.zeros((256, 256)) 
+    ubergange = np.zeros((256, 256))
     # Pixel einzeln durchgehen
     for y in range(len(image)):
         for x in range(len(image)-1):
@@ -89,20 +89,16 @@ def make_uebergangsmatrix(image):
     fig = plt.figure(figsize=(6, 7))
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle("Uebergangsmatrix", fontsize=16)
-    plt.imshow(ubergange, cmap='gray', norm=LogNorm())
+    image = plt.imshow(ubergange, norm=LogNorm())
+    plt.colorbar(image, shrink=0.6)
     plt.tight_layout(rect=[0, 0, 1, 1.1])
-#    # TODO: colorbar?
-#    # TODO: Colorbarbeschriftung
-#    plt.colorbar(ubergange)
     plt.show()
-    
+
 
 def main():
     # Bild- Array (aus Aufgabe 1.1) erstellen
     szinti, pixel, pixel_quadrant = Aufgabe_1_1.make_szinti()
-    
     szinti = szinti_vorbereitung_3_9(szinti, pixel, pixel_quadrant)
-    
     # Erzeugen der Uebergangsmatrizen:
     # mit Vektor C(δ=(1,0))
     make_uebergangsmatrix(szinti)
@@ -112,5 +108,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-
+    main() 
