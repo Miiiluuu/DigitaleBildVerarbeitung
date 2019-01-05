@@ -73,9 +73,9 @@ def main():
                                                  "Kantenextraktion",
                                                  "Sobel-Filter",
                                                  "Roberts-Filter")
-    # Anwendung Sobelfilter
+    # Plot Sobelfilter
     ax1.imshow(szinti_sobel_ges, cmap='gray', extent=[-128, 128, -128, 128])
-    # Anwendung Robertsfilter
+    # Plot Robertsfilter
     ax2.imshow(szinti_robert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
 
@@ -97,3 +97,4 @@ if __name__ == "__main__":
     # Sobel und Robert haben Richtungsabhaengigkeit
     # aber: fuer Kantenfilter gilt Isotropie: Filterantwort soll nicht von der
     # Richtung der Kante abhaengen: beide Filter sehen in etwa gleich aus
+    # Sobel mehr Mittelung daher Robert schaerfer

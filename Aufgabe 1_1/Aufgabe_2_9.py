@@ -26,8 +26,7 @@ def make_kreisfilter(image, anteil, pixel_mitte):
         anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des
         Tiefpassfilters bestimmt.
 
-        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
-        TODO: nicht immer perfekt eingehalten?
+        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
     """
     filter_kreis = np.zeros_like(image)
     # TODO: pixel_mitte (128) ≙ Nyquist-Frequenz. warum?

@@ -209,23 +209,23 @@ def extract(image, y_begin, y_end, x_begin, x_end):
         ----------
         image: Array, Eingabewerte.
 
-        y_begin: Startpixel (in y-Richtung), welcher den Beginn des
-        entsprechenden Quadranten bezeichnet. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        y_begin: Startpixel (in y-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten enthalten.
 
-        y_end: Pixel (in y-Richtung), welcher das Ende des
-        entsprechenden Quadranten festlegt. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        y_end: Endpixel (in y-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten nicht mehr enthalten.
 
-        x_begin: Startpixel (in x-Richtung), welcher den Beginn des
-        entsprechenden Quadranten bezeichnet. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        x_begin: Startpixel (in x-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten enthalten.
 
-        x_end: Pixel (in x-Richtung), welcher das Ende des
-        entsprechenden Quadranten festlegt. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        x_end: Endpixel (in x-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten nicht mehr enthalten.
 
-        Zeichnung: TODO: ok?
+        Zeichnung:
 
                 image:
                 +-------------+--------------+
@@ -253,7 +253,6 @@ def make_szinti():
     pixel = 256
     # Anzahl an Pixeln der Teilbilder (Flaechenquelle A, B, C und D, fuer
     # Erstellen (lokaler) Koordinatensysteme)
-    # ≙ Mitte des globalen Koordinatensystems TODO: nicht immer?
     pixel_quadrant = pixel // 2
     # Erstellung Szintigramm = 256x256- Array
     # (Szintigramm-Flaeche ≙ globales Koordinatensystem)
@@ -752,8 +751,7 @@ def make_kreisfilter(image, anteil, pixel_mitte,):
         anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des
         Tiefpassfilters bestimmt.
 
-        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
-        TODO: nicht immer perfekt eingehalten?
+        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
     """
     filter_kreis = np.zeros_like(image)
     # TODO: pixel_mitte (128) ≙ Nyquist-Frequenz. warum?
@@ -808,8 +806,7 @@ def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
         anteil_down: Anteil der Nyquistfrequenz, welche untere Grenzfrequenz
         des Bandpassfilters bestimmt.
 
-        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
-        TODO: nicht immer perfekt eingehalten?
+        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
     """
     # Teilkreis / -filter 1:
     filter_kreis1 = make_kreisfilter(image, anteil_up, pixel_mitte)
@@ -1173,26 +1170,6 @@ def extract_values(image, value):
     return koord_x, koord_y
 
 
-def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
-    """ Plot eines 2D-Histogramms mit entsprechender Ueberschrift,
-        Achsenbeschriftung, Farbskala etc.
-    """
-    plt.figure(figsize=(10, 6))
-    # Hinzufuegen der Ueberschrift zum Plot
-    plt.suptitle(ueberschrift, fontsize=16)
-    # Achsenbeschriftungen
-    plt.xlabel(abszisse)
-    plt.ylabel(ordinate)
-    # TODO: warum genau diese Werte? kann nicht vorausgesetzt werden?
-    counts, xedges, yedges, image = plt.hist2d(werte1, werte2, bins=180,
-                                               range=[[0, 180], [-64, 64]])
-    # Ueberlappungen vermeiden
-    plt.tight_layout(rect=[0, 0.03, 1, 0.8])
-    # TODO: Colorbarbeschriftung
-    plt.colorbar(image)
-    plt.show()
-
-
 def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     """ Funktion leistet Vorverarbeitung des Bildes aus Aufgabe 1.1 fuer
         anschließende Kantenorientierte Segmentierung (Hough-Transformation).
@@ -1223,6 +1200,23 @@ def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     # (entsprechen Einsen im logischen Bild) enthalten)
     koord_x, koord_y = extract_values(quadrant_vier_kanten, 1)
     return koord_x, koord_y
+
+
+def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
+    """ Plot eines 2D-Histogramms mit entsprechender Ueberschrift,
+        Achsenbeschriftung, Farbskala etc.
+    """
+    plt.figure(figsize=(10, 6))
+    # Hinzufuegen der Ueberschrift zum Plot
+    plt.suptitle(ueberschrift, fontsize=16)
+    # Achsenbeschriftungen
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
+    counts, xedges, yedges, image = plt.hist2d(werte1, werte2, bins=180)
+    # Ueberlappungen vermeiden
+    plt.tight_layout(rect=[0, 0.03, 1, 0.8])
+    plt.colorbar(image)
+    plt.show()
 
 
 def hough_trafo(koord_x, koord_y):
@@ -1849,9 +1843,9 @@ def aufgabe_3_4(szinti, pixel, pixel_quadrant):
     ax1, ax2 = plot_vorbereitung_2sp("verschiedene Filter zur " +
                                      "Kantenextraktion",
                                      "Sobel-Filter", "Roberts-Filter")
-    # Anwendung Sobelfilter
+    # Plot Sobelfilter
     ax1.imshow(szinti_sobel_ges, cmap='gray', extent=[-128, 128, -128, 128])
-    # Anwendung Robertsfilter
+    # Plot Robertsfilter
     ax2.imshow(szinti_robert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.show()
     # Interpretation:
@@ -1869,6 +1863,7 @@ def aufgabe_3_4(szinti, pixel, pixel_quadrant):
         # aber: fuer Kantenfilter gilt Isotropie: Filterantwort soll nicht von
         # der Richtung der Kante abhaengen: beide Filter sehen in etwa gleich
         # aus
+        # Sobel mehr Mittelung daher Robert schaerfer
     
     
 def aufgabe_3_5(szinti, pixel, pixel_quadrant):

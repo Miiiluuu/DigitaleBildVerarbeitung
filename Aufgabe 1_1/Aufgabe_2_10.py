@@ -27,8 +27,7 @@ def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
         anteil_down: Anteil der Nyquistfrequenz, welche untere Grenzfrequenz
         des Bandpassfilters bestimmt.
 
-        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
-        TODO: nicht immer perfekt eingehalten?
+        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
     """
     # Teilkreis / -filter 1:
     filter_kreis1 = Aufgabe_2_9.make_kreisfilter(image, anteil_up, pixel_mitte)

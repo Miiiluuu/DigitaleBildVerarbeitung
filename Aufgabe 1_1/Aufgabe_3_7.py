@@ -58,26 +58,6 @@ def extract_values(image, value):
     return koord_x, koord_y
 
 
-def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
-    """ Plot eines 2D-Histogramms mit entsprechender Ueberschrift,
-        Achsenbeschriftung, Farbskala etc.
-    """
-    plt.figure(figsize=(10, 6))
-    # Hinzufuegen der Ueberschrift zum Plot
-    plt.suptitle(ueberschrift, fontsize=16)
-    # Achsenbeschriftungen
-    plt.xlabel(abszisse)
-    plt.ylabel(ordinate)
-    # TODO: warum genau diese Werte? kann nicht vorausgesetzt werden?
-    counts, xedges, yedges, image = plt.hist2d(werte1, werte2, bins=180,
-                                               range=[[0, 180], [-64, 64]])
-    # Ueberlappungen vermeiden
-    plt.tight_layout(rect=[0, 0.03, 1, 0.8])
-    # TODO: Colorbarbeschriftung
-    plt.colorbar(image)
-    plt.show()
-
-
 def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     """ Funktion leistet Vorverarbeitung des Bildes aus Aufgabe 1.1 fuer
         anschließende Kantenorientierte Segmentierung (Hough-Transformation).
@@ -108,6 +88,23 @@ def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     # (entsprechen Einsen im logischen Bild) enthalten)
     koord_x, koord_y = extract_values(quadrant_vier_kanten, 1)
     return koord_x, koord_y
+
+
+def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
+    """ Plot eines 2D-Histogramms mit entsprechender Ueberschrift,
+        Achsenbeschriftung, Farbskala etc.
+    """
+    plt.figure(figsize=(10, 6))
+    # Hinzufuegen der Ueberschrift zum Plot
+    plt.suptitle(ueberschrift, fontsize=16)
+    # Achsenbeschriftungen
+    plt.xlabel(abszisse)
+    plt.ylabel(ordinate)
+    counts, xedges, yedges, image = plt.hist2d(werte1, werte2, bins=180)                                     
+    # Ueberlappungen vermeiden
+    plt.tight_layout(rect=[0, 0.03, 1, 0.8])
+    plt.colorbar(image)
+    plt.show()
 
 
 def hough_trafo(koord_x, koord_y):

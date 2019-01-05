@@ -194,23 +194,23 @@ def extract(image, y_begin, y_end, x_begin, x_end):
         ----------
         image: Array, Eingabewerte.
 
-        y_begin: Startpixel (in y-Richtung), welcher den Beginn des
-        entsprechenden Quadranten bezeichnet. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        y_begin: Startpixel (in y-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten enthalten.
 
-        y_end: Pixel (in y-Richtung), welcher das Ende des
-        entsprechenden Quadranten festlegt. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        y_end: Endpixel (in y-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten nicht mehr enthalten.
 
-        x_begin: Startpixel (in x-Richtung), welcher den Beginn des
-        entsprechenden Quadranten bezeichnet. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        x_begin: Startpixel (in x-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten enthalten.
 
-        x_end: Pixel (in x-Richtung), welcher das Ende des
-        entsprechenden Quadranten festlegt. Zur Festlegung der
-        Intervallgrenzen des entsprechenden Quadranten.
+        x_end: Endpixel (in x-Richtung). Zur Festlegung der
+        Intervallgrenzen des entsprechenden Quadranten. Dieser Pixel ist in 
+        extrahiertem Quadranten nicht mehr enthalten.
 
-        Zeichnung: TODO: ok?
+        Zeichnung:
 
                 image:
                 +-------------+--------------+
@@ -238,7 +238,6 @@ def make_szinti():
     pixel = 256
     # Anzahl an Pixeln der Teilbilder (Flaechenquelle A, B, C und D, fuer
     # Erstellen (lokaler) Koordinatensysteme)
-    # ≙ Mitte des globalen Koordinatensystems TODO: nicht immer?
     pixel_quadrant = pixel // 2
     # Erstellung Szintigramm = 256x256- Array
     # (Szintigramm-Flaeche ≙ globales Koordinatensystem)
