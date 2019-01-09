@@ -335,26 +335,6 @@ def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     return ax1, ax2
 
 
-# TODO: sehr speziell bezeichnete Fkt. Bloed?
-def plot_profile(xwerte1, grauwerte1, xwerte2, grauwerte2):
-    """ Stellt Grauwertprofile fuer das Bild aus Aufgabe 1.1. längs
-        bestimmter y- Linien dar.
-
-        Parameter:
-        ----------
-        xwerte1, xwerte2: Abszissenwerte entlang bestimmter y- Linien.
-
-        grauwerte1, grauwerte2: Grauwerte entlang bestimmter y- Linien.
-    """
-    ax1, ax2 = plot_vorbereitung_2sp('Grauwertprofile fuer das Bild aus ' +
-                                     'Aufgabe 1.1', 'laengs y = 60',
-                                     'laengs y = -60', r'$x/mm$',
-                                     'Grauwert')
-    ax1.plot(xwerte1, grauwerte1)
-    ax2.plot(xwerte2, grauwerte2)
-    plt.show()
-
-
 # TODO: ist relativ langsam. Numba?
 def erstelle_grauwerthist(werte, herkunft):
     """ Erstellung Grauwertprofil, Darstellung auf zwei Weisen:
@@ -379,7 +359,6 @@ def erstelle_grauwerthist(werte, herkunft):
     ordinate_sort = np.sort(ordinate)
     # Ordinatenachse kuerzen
     plt.ylim(0, ordinate_sort[-2] * 1.1)
-    plt.show()
 
 
 def mittelwert_grauwerthist(ordinate, abszisse):
@@ -422,7 +401,7 @@ def schiefe_grauwerthist(ordinate, abszisse, mittel):
     varianz = np.sum(ordinate * (abszisse - mittel)**2)
     drittes_moment = np.sum(ordinate * (abszisse - mittel)**3)
     schiefe = drittes_moment / varianz**(3 / 2)
-    print(f'''Die Schiefe des Grauwert-Histogramms aus dem Szintigramm''' +
+    print(f'''Die Schiefe des Grauwert-Histogramms aus dem Szintigramm ''' +
           f'''betraegt {np.round(schiefe, 3)}.''')
 
 
@@ -474,6 +453,8 @@ def erstellung_bitebenen(image):
     # Plot des Ursprungsbildes mit Unterueberschrift
     axs[0].imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
     axs[0].set_title('Ursprungsbild')
+    axs[0].set_xlabel(r'$x/mm$')
+    axs[0].set_ylabel(r'$y/mm$')
     # einzelne Bitebenen erstellen
     ebene = []
     # Kopie des Eingabe-Arrays, um Originalbild unveraendert zu lassen!
@@ -486,8 +467,10 @@ def erstellung_bitebenen(image):
     # Plots der einzelnen Bitebenen mit Unterueberschriften
     for i in range(7, -1, -1):
         axs[i+1].set_title(f'''Bitebene {7-i}''')
+        # Achsenbeschriftungen
+        axs[i+1].set_xlabel(r'$x/mm$')
+        axs[i+1].set_ylabel(r'$y/mm$')
         axs[i+1].imshow(ebene[i], cmap='gray', extent=[-128, 128, -128, 128])
-    plt.show()
     return ebene
 
 
@@ -649,7 +632,6 @@ def plot_fourier(power, amplitude, phase, herkunft):
     # Phasenbild
     axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
                   extent=[-0.5, 0.5, -0.5, 0.5])
-    plt.show()
     
     
 def drehmatrix(grad):
@@ -937,7 +919,6 @@ def plot_graukeile_transform(graukeile):
     axs[5].set_title("Gauss")
     for i in range(6):
         axs[i].imshow(graukeile[i], cmap='gray', extent=[-128, 128, -128, 128])
-    plt.show()
     
     
 def make_mittelwertfilter():
@@ -1098,7 +1079,6 @@ def plot(ueberschrift, image):
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
     plt.imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
-    plt.show()
 
 
 def use_schwellwert(image, schwelle_unten, schwelle_oben):
@@ -1215,8 +1195,7 @@ def plot_2d_hist(ueberschrift, abszisse, ordinate, werte1, werte2):
     counts, xedges, yedges, image = plt.hist2d(werte1, werte2, bins=180)
     # Ueberlappungen vermeiden
     plt.tight_layout(rect=[0, 0.03, 1, 0.8])
-    plt.colorbar(image)
-    plt.show()
+    plt.colorbar(image, label="bla")
 
 
 def hough_trafo(koord_x, koord_y):
@@ -1325,7 +1304,6 @@ def plot_schnittpkt(ueberschrift, image, schnittpkt):
     plt.axhline(schnittpkt[1], color="deeppink")
     # Ueberlappungen vermeiden
     plt.tight_layout(rect=[0, 0.03, 1, 0.85])
-    plt.show()
 
 
 def medianfilter_5x5(image):
@@ -1403,9 +1381,8 @@ def make_uebergangsmatrix(image):
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle("Uebergangsmatrix", fontsize=16)
     image = plt.imshow(ubergange, norm=LogNorm())
-    plt.colorbar(image, shrink=0.6)
+    plt.colorbar(image, shrink=0.6, label="bla")
     plt.tight_layout(rect=[0, 0, 1, 1.1])
-    plt.show()
 
 
 def aufgabe_1_1(szinti, pixel, pixel_quadrant):
@@ -1417,8 +1394,15 @@ def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     print("Aufgabe 1.1:")
     print("")
     # Szintigramm als Plot zeichnen
+    # TODO: ist dieser Plot haufiger?
     plt.figure()
+    # Hinzufuegen der Ueberschrift zum Plot
+    plt.suptitle("Szintigramm aus Aufgabe 1.1", fontsize=16)
+    # Achsenbeschriftungen
+    plt.xlabel(r'$x/mm$')
+    plt.ylabel(r'$y/mm$')
     plt.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_1_1", dpi=300)
     plt.show()
 
 
@@ -1437,10 +1421,16 @@ def aufgabe_2_1(szinti, pixel, pixel_quadrant):
     # laengs y = -60, mit Umrechnung globales/lokales Koordinatensystem
     grauwertprofil_minus60 = extraktion_aus_array(szinti, pixel_quadrant + 60)
     # Plots: Erstellung Grauwertprofile
-    plot_profile(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60,
-                 np.arange(-pixel_quadrant, pixel_quadrant),
-                 grauwertprofil_minus60)
-
+    ax1, ax2 = plot_vorbereitung_2sp('Grauwertprofile fuer das Bild aus ' +
+                                     'Aufgabe 1.1', 'laengs y = 60',
+                                     'laengs y = -60', r'$x/mm$',
+                                     'Grauwert')
+    ax1.plot(np.arange(-pixel_quadrant, pixel_quadrant), grauwertprofil_60)
+    ax2.plot(np.arange(-pixel_quadrant, pixel_quadrant),
+             grauwertprofil_minus60)
+    plt.savefig("Aufgabe_2_1", dpi=300)
+    plt.show()
+    
 
 def aufgabe_2_2(szinti, pixel, pixel_quadrant):
     """ Erstellt das Grauwerthistogramm des Bildes aus Aufgabe 1.1 und stellt
@@ -1450,6 +1440,8 @@ def aufgabe_2_2(szinti, pixel, pixel_quadrant):
     print("")
     # Grauwerthistogramm zeichnen:
     erstelle_grauwerthist(szinti.flatten(), "das Bild aus Aufgabe 1.1")
+    plt.savefig("Aufgabe_2_2", dpi=300)
+    plt.show()
 
 
 def aufgabe_2_3(szinti, pixel, pixel_quadrant):
@@ -1485,7 +1477,6 @@ def aufgabe_2_4(szinti, pixel, pixel_quadrant):
           f'''{np.round(info, 3)} Bit/Pixel.''')
 
 
-# TODO:  Ergebnisse vergleichen
 def aufgabe_2_5(szinti, pixel, pixel_quadrant):
     """ Erstellt die Bitebenen aller Bilder aus Aufgabe 1.1 und berechnet fuer
         jede Ebene den mittleren Informationsgehalt je Pixel.
@@ -1495,20 +1486,10 @@ def aufgabe_2_5(szinti, pixel, pixel_quadrant):
     print("")
     # Erstellung Bitebenen
     ebene = erstellung_bitebenen(szinti)
+    plt.savefig("Aufgabe_2_5", dpi=300)
+    plt.show()
     # Berechnung mittlerer Informationsgehalt pro Pixel
-    infogehalt_einzelne_bitebenen(ebene, "Aufgabe 1.1 ")
-    # Interpretation!!!
-        # einzelne Bitebenen entspricht Zahlencodierung
-        # es werden nur Farbkontraste wirklich sichtbar in oberen Bitebenen?
-        # in unteren Bitebenen nur Rauschen, keine Infos
-        # Arrays der einzelnen Bitebenen bestehen nur aus Einsen und Nullen:
-        # Nullen werden weggeschmissen
-        # daraus folgt Negativer Infogehalt? = sehr gering?
-        # wann besten Infogehalt:laut Bildern bei Bitebene 5, aber laut Tabelle
-        # größter Infogehalt bei Bitebene Null? 
-        # ist kein gutes Maß fuer Bitebenen,da Einsen und Nullen
-        # 7 ist relativ wichtig (most signifikant), unt. weiß / schwarz
-        # Histogramm enthaelt keine raumlichen Infos
+    infogehalt_einzelne_bitebenen(ebene, "Aufgabe 1.1")
     
 
 # TODO: ist relativ langsam. Numba?
@@ -1522,10 +1503,14 @@ def aufgabe_2_6(szinti, pixel, pixel_quadrant):
     print("")
     # Plot Histogramm fuer Originalbild aus Aufgabe 1.1
     erstelle_grauwerthist(szinti.flatten(), "das Bild aus Aufgabe 1.1")
+    plt.savefig("Aufgabe_2_6_Original", dpi=300)
+    plt.show()
     # Erstellung Differenzbild
     differenz = differenzbild(szinti)
     # Plot Histogramm des Differenzbildes
     erstelle_grauwerthist(differenz.flatten(), "das Differenzbild")
+    plt.savefig("Aufgabe_2_6_Differenz", dpi=300)
+    plt.show()
     # Berechnung mittlerer Informationsgehalt pro Pixel fuer das Originalbild
     info_original = infogehalt(szinti)
     # Berechnung mittlerer Informationsgehalt pro Pixel fuer das
@@ -1566,7 +1551,9 @@ def aufgabe_2_7(szinti, pixel, pixel_quadrant):
     # Fouriertransformation
     fourier_image, power, amplitude, phase = calculate_fourier(szinti)
     # graphische Darstellung der Fouriertransformierten
-    plot_fourier(power, amplitude, phase, "des Bildes aus Aufgabe 1.1")  
+    plot_fourier(power, amplitude, phase, "des Bildes aus Aufgabe 1.1")
+    plt.savefig("Aufgabe_2_7", dpi=300)
+    plt.show()
     # Interpretation!!!
         # Phasenbild codiert raeumliche Info
         # Linien entsprechen Aenderungen in Grauwerten / Farbspruenge / Kanten
@@ -1610,6 +1597,7 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     # Plot Leistungsspektrum gedrehtes Bild
     ax4.imshow(power_transform, cmap='gray', norm=LogNorm(),
                extent=[-0.5, 0.5, -0.5, 0.5])
+    plt.savefig("Aufgabe_2_8", dpi=300)
     plt.show()
     # Interpretation!!!
           # eine Drehung der Ortsfunktion um den Winkel alpha fuehrt zu einer
@@ -1638,6 +1626,7 @@ def aufgabe_2_9(szinti, pixel, pixel_quadrant):
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     # Plot gefiltertes Bild
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_2_9", dpi=300)
     plt.show()
     # Interpretation:
         # Schaerfe ist weggenommen vom Originalbild, da hohe Frequenzen
@@ -1669,6 +1658,7 @@ def aufgabe_2_10(szinti, pixel, pixel_quadrant):
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     # Plot gefiltertes Bild
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_2_10", dpi=300)
     plt.show()
     # Interpretation!!!
         # mittleren Frequenzen passieren Filter, sind noch in Originalbild
@@ -1700,6 +1690,7 @@ def aufgabe_2_11(szinti, pixel, pixel_quadrant):
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     # Plot gefiltertes Bild
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_2_11", dpi=300)
     plt.show()
     # Interpretation:
         # hohe Frequenzen des Originalbildes noch vorhanden
@@ -1726,7 +1717,9 @@ def aufgabe_3_1():
     graukeile = use_kennlinien(graukeil, kennlinien)
     # Plot der einzelnen transformierten Graukeile
     plot_graukeile_transform(graukeile)
-
+    plt.savefig("Aufgabe_3_1", dpi=300)
+    plt.show()
+    
 
 def aufgabe_3_2(szinti, pixel, pixel_quadrant):
     """ Fuehrt nacheinander zunaechst eine Rotation um 90° (im positiven
@@ -1753,6 +1746,7 @@ def aufgabe_3_2(szinti, pixel, pixel_quadrant):
     szinti_transform = transformation(szinti, pixel_quadrant, transform)
     # Plot transformiertes Bild aus Aufgabe 1.1
     ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_3_2", dpi=300)
     plt.show()
     
 
@@ -1805,6 +1799,7 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     # Filterungen
     for i in range(4, 8):
         axs[i].plot((np.arange(-pixel_quadrant, pixel_quadrant)), bilder[i])
+    plt.savefig("Aufgabe_3_3", dpi=300)
     plt.show()
     # Vergleich
         # alle sind Glättungsverfahren: Reduzieren des Bildrauschens,
@@ -1847,6 +1842,7 @@ def aufgabe_3_4(szinti, pixel, pixel_quadrant):
     ax1.imshow(szinti_sobel_ges, cmap='gray', extent=[-128, 128, -128, 128])
     # Plot Robertsfilter
     ax2.imshow(szinti_robert, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_3_4", dpi=300)
     plt.show()
     # Interpretation:
         # Kantenextraktion:
@@ -1881,6 +1877,8 @@ def aufgabe_3_5(szinti, pixel, pixel_quadrant):
     # mit einer 8er Nachbarschaft
     plot('Anwendung eines Laplacefilters (8er Nachbarschaft) \n'
          'auf das Bild aus Aufgabe 1.1', szinti_laplace)
+    plt.savefig("Aufgabe_3_5", dpi=300)
+    plt.show()
     # Interpretation:
         # Laplace: Summe partielle zweite Ableitungen nach x und y Richtung
         # strukturreiche Bereiche werden hervorgehoben
@@ -1913,6 +1911,7 @@ def aufgabe_3_6(szinti, pixel, pixel_quadrant):
     plt.figure()
     plt.imshow(szinti_bearbeitet, cmap='gray', extent=[-128, 128, -128, 128],
                vmax=255)
+    plt.savefig("Aufgabe_3_6", dpi=300)
     plt.show()
 
 
@@ -1935,6 +1934,8 @@ def aufgabe_3_7(szinti, pixel, pixel_quadrant):
     # Finden der Kantenpunkte, die zu einer (durchgehenden) Linie gehoeren
     # (und demnach kein Rauschen sind)
     hough_trafo(koord_x, koord_y)
+    plt.savefig("Aufgabe_3_7", dpi=300)
+    plt.show()
     
 
 def aufgabe_3_8(szinti, pixel, pixel_quadrant):
@@ -1952,11 +1953,15 @@ def aufgabe_3_8(szinti, pixel, pixel_quadrant):
     # Einzeichnen des geometrischen Schwerpunktes
     plot_schnittpkt("geometrischer Schwerpunkt \n"
                 "- innerhalb Bild aus Aufgabe 1.1 -", szinti, schwerpkt_geo)
+    plt.savefig("Aufgabe_3_8_geometric", dpi=300)
+    plt.show()
     # Berechnung vom Massenschwerpunkt (in x- und y-Richtung)
     schwerpkt_mass = calc_schwerpkt(szinti)
     # Einzeichnen des Massenschwerpunktes
     plot_schnittpkt("Massenschwerpunkt \n"
                 "- innerhalb Bild aus Aufgabe 1.1 -", szinti, schwerpkt_mass)
+    plt.savefig("Aufgabe_3_8_mass", dpi=300)
+    plt.show()
     
     
 def aufgabe_3_9(szinti, pixel, pixel_quadrant):
@@ -1971,9 +1976,13 @@ def aufgabe_3_9(szinti, pixel, pixel_quadrant):
     # Erzeugen der Uebergangsmatrizen:
     # mit Vektor C(δ=(1,0))
     make_uebergangsmatrix(szinti)
+    plt.savefig("Aufgabe_3_9_10", dpi=300)
+    plt.show()
     # mit Vektor C(δ=(0,1))
     szinti_t = np.transpose(szinti)
     make_uebergangsmatrix(szinti_t)
+    plt.savefig("Aufgabe_3_9_01", dpi=300)
+    plt.show()
 
 
 def main():
@@ -1984,47 +1993,47 @@ def main():
     # Bildverarbeitung, siehe Folie 17)  erstellen
     szinti, pixel, pixel_quadrant = make_szinti()
     # Aufruf Aufgabe 1.1
-    aufgabe_1_1(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.1
-    aufgabe_2_1(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.2
-    aufgabe_2_2(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.3
-    aufgabe_2_3(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.4
-    aufgabe_2_4(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.5
-    aufgabe_2_5(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.6
-    aufgabe_2_6(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.7
-    aufgabe_2_7(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.8
-    aufgabe_2_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.9
-    aufgabe_2_9(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.10
-    aufgabe_2_10(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.11
-    aufgabe_2_11(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.1
-    aufgabe_3_1()
-    # Aufruf Aufgabe 3.2
-    aufgabe_3_2(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.3
-    aufgabe_3_3(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.4
-    aufgabe_3_4(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.5
-    aufgabe_3_5(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.6
-    aufgabe_3_6(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.7
+#    aufgabe_1_1(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.1
+#    aufgabe_2_1(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.2
+#    aufgabe_2_2(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.3
+#    aufgabe_2_3(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.4
+#    aufgabe_2_4(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.5
+#    aufgabe_2_5(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.6
+#    aufgabe_2_6(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.7
+#    aufgabe_2_7(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.8
+#    aufgabe_2_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.9
+#    aufgabe_2_9(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.10
+#    aufgabe_2_10(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.11
+#    aufgabe_2_11(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.1
+#    aufgabe_3_1()
+#    # Aufruf Aufgabe 3.2
+#    aufgabe_3_2(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.3
+#    aufgabe_3_3(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.4
+#    aufgabe_3_4(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.5
+#    aufgabe_3_5(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.6
+#    aufgabe_3_6(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.7
     aufgabe_3_7(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.8
-    aufgabe_3_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.9
-    aufgabe_3_9(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.8
+#    aufgabe_3_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.9
+#    aufgabe_3_9(szinti, pixel, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
 
@@ -2035,7 +2044,7 @@ def main():
 #    t2 = time.time()
     # Ausgabe Zeitanspruch des Programms
     print("Die Zeit dieses Programmes lautet:", t2 - t1, "s")
-    input("Bitte Enter druecken zum Beenden!")
+#    input("Bitte Enter druecken zum Beenden!")
 
 
 if __name__ == "__main__":
