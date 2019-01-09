@@ -569,7 +569,7 @@ def calculate_fourier(image):
     imag = np.imag(fourier_image)
     real = np.real(fourier_image)
     # Ermittlung des Phasenbildes
-    phase = np.arctan(imag / real)
+    phase = np.arctan2(imag, real)
     # Ermittlung des Leistungsspektrums
     power = real**2 + imag**2
     # Ermittlung des Amplitudenbildes
@@ -1520,25 +1520,6 @@ def aufgabe_2_6(szinti, pixel, pixel_quadrant):
     vgl_infogehalt_differenz('Original', 'Differenz',
                              np.round(info_original, 3),
                              np.round(info_differenz, 3))
-    # Interpretation!!!
-        # Differenz entspricht Kompression: eigentlich verlustfrei
-        # das heißt Infogehalt muesste derselbe sein?
-        # Eliminierung redundanter Bildinformationen
-        # Wiederherstellung des Originalbildes i.a. moeglich
-        # Sinn: durch Bildung der Differenz muessen nur noch kleine Zahlenwerte
-        # abgespeichert werden
-        # aber laut Tabelle: Differenzbild weißt weniger Infogehalt auf
-        # laut Formel: bei benachbarten Pixeln mit denselben Grauwerten
-        # ergibt sich als Differenz Null
-        # das heißt wirkliche Bildinformationen treten nur an Kanten/ starken
-        # Bildkontrasten auf
-        # auf spitze Form des Histogramms eingehen:
-        # viele relativ kleine/ mittlere Werte werden abgespeichert im
-        # Differenzbild, keine hohen Farbwerte (da Differenzbildung)
-        # Infogehalt ist pro Pixel
-        # bei Differenzbild ist zwischen einzelnen Pixeln eine mathematische
-        # Abhaengigkeit, bei Originalbild sind Pixel voneinander unabhaengig.
-        # das heißt PRO Pixel ist es bei Differenz niedriger
     
 
 def aufgabe_2_7(szinti, pixel, pixel_quadrant):
@@ -1992,48 +1973,48 @@ def main():
     # Szintigramm (beschrieben in Vorlesung zu Modul MF-MRS_14 Digitale
     # Bildverarbeitung, siehe Folie 17)  erstellen
     szinti, pixel, pixel_quadrant = make_szinti()
-    # Aufruf Aufgabe 1.1
-    aufgabe_1_1(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.1
-    aufgabe_2_1(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.2
-    aufgabe_2_2(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.3
-    aufgabe_2_3(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.4
-    aufgabe_2_4(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.5
-    aufgabe_2_5(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.6
-    aufgabe_2_6(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 1.1
+#    aufgabe_1_1(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.1
+#    aufgabe_2_1(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.2
+#    aufgabe_2_2(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.3
+#    aufgabe_2_3(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.4
+#    aufgabe_2_4(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.5
+#    aufgabe_2_5(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.6
+#    aufgabe_2_6(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 2.7
     aufgabe_2_7(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.8
-    aufgabe_2_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.9
-    aufgabe_2_9(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.10
-    aufgabe_2_10(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.11
-    aufgabe_2_11(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.1
-    aufgabe_3_1()
-    # Aufruf Aufgabe 3.2
-    aufgabe_3_2(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.3
-    aufgabe_3_3(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.4
-    aufgabe_3_4(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.5
-    aufgabe_3_5(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.6
-    aufgabe_3_6(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.7
-    aufgabe_3_7(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.8
-    aufgabe_3_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.9
-    aufgabe_3_9(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.8
+#    aufgabe_2_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.9
+#    aufgabe_2_9(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.10
+#    aufgabe_2_10(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.11
+#    aufgabe_2_11(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.1
+#    aufgabe_3_1()
+#    # Aufruf Aufgabe 3.2
+#    aufgabe_3_2(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.3
+#    aufgabe_3_3(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.4
+#    aufgabe_3_4(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.5
+#    aufgabe_3_5(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.6
+#    aufgabe_3_6(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.7
+#    aufgabe_3_7(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.8
+#    aufgabe_3_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.9
+#    aufgabe_3_9(szinti, pixel, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
 
