@@ -43,6 +43,7 @@ def make_scale(image):
     # Berechnung Skalierungsfaktor, sodass hoechster Grauwert erfasst wird
     skal = weiß / hoechster_grauwert
     # Skalierungsfaktor auf gesamtes Szintigramm anwenden
+    # TODO: funktioniert nicht wenn image int32-Werte, nur float
     image *= skal
     # Zuordnung auf 255 Grauwerte
     image = np.int_(image)
@@ -577,7 +578,6 @@ def calculate_fourier(image):
     return fourier_image, power, amplitude, phase
 
 
-# TODO: plot_vorbereitungen 2, 3, 6 oder 9 Subplots in einer Fkt?
 def plot_vorbereitung_3sp(ueberschrift, sub_ueberschriften, abszisse, ordinate):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
         drei Subplots, Ueberschriften, Achsenbeschriftungen etc.
@@ -603,7 +603,6 @@ def plot_vorbereitung_3sp(ueberschrift, sub_ueberschriften, abszisse, ordinate):
     return axs
 
 
-# TODO: Fkt unsinnig da nur einmal verwendet?
 def plot_fourier(power, amplitude, phase, herkunft):
     """"Darstellung des Leistungsspektrums, Phasen- und Amplitudenbild einer
         2D-Fouriertransformierten.
@@ -653,7 +652,6 @@ def drehmatrix(grad):
     return dreh
 
 
-# TODO: Grauwertappromimation!
 def transformation(image, pixel_mitte, transform):
     """ Transformation eines Bildes in positivem Drehsinne (siehe Vorlesung,
         Folie 88, 131 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung).
@@ -1541,7 +1539,6 @@ def aufgabe_2_7(szinti, pixel, pixel_quadrant):
         # gar keine Linien hier? keine Farbaenderungen?
     
 
-# TODO: noch mehr Funktionen?
 def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     """ Dreht das Bild aus Aufgabe 1.1 um 30° im positiven Drehsinne,
         berechnet die Fouriertransformierte und vergleicht das Ergebnis mit
@@ -1559,8 +1556,12 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     dreh = drehmatrix(30)
     # Erstellung gedrehtes Originalbild Ortsraum
     szinti_transform = transformation(szinti, pixel_quadrant, dreh)
+    # TODO: manchmal ist szinti_transform nicht 255: scale??
+    # aber 255 Wert ist einfach rausgedreht, kann man nichts machen
+    # (funktioniert gar nicht)
     # Plot gedrehtes Originalbild Ortsraum
     ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
+    plt.savefig("Aufgabe_2_8_original", dpi=300)
     
     # Plots fuer Frequenzraum Originalbild und gedrehtes Bild erstellen:
     ax3, ax4 = plot_vorbereitung_2sp('Frequenzraum - Leistungsspektrum',
@@ -1575,15 +1576,12 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
                extent=[-0.5, 0.5, -0.5, 0.5])
     # Erstellung gedrehtes Leistungsspektrum
     power_transform = transformation(power, pixel_quadrant, dreh)
+    # TODO: hier auch scale da Transformation???
     # Plot Leistungsspektrum gedrehtes Bild
     ax4.imshow(power_transform, cmap='gray', norm=LogNorm(),
                extent=[-0.5, 0.5, -0.5, 0.5])
-    plt.savefig("Aufgabe_2_8", dpi=300)
+    plt.savefig("Aufgabe_2_8_power", dpi=300)
     plt.show()
-    # Interpretation!!!
-          # eine Drehung der Ortsfunktion um den Winkel alpha fuehrt zu einer
-          # gleichartigen Drehung der entsprechenden Frequenzfunktion im
-          # Frequenzraum
           
           
 def aufgabe_2_9(szinti, pixel, pixel_quadrant):
@@ -1597,6 +1595,11 @@ def aufgabe_2_9(szinti, pixel, pixel_quadrant):
     filter_tief = make_kreisfilter(szinti, 0.25, pixel_quadrant)
     # Anwendung des Tiefpassfilters auf Originalbild
     szinti_gefiltert = use_filter(szinti, filter_tief)
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    # TODO: ist gar nicht der Sinn eines Tiefpassfilters, da hohe Frequenzen
+    # ja gerade eliminiert werden sollen, die gefilterten Werte sind teilweise
+    # auch negativ, dabei muessten sie sich doch von Null an verteilen?
+#    szinti_gefiltert = make_scale(szinti_gefiltert)
     # Erstellung Plots fuer graphische Darstellung Originalbild und
     # gefiltertes Bild
     ax1, ax2 = plot_vorbereitung_2sp('Tiefpassfilterung \n'
@@ -1987,12 +1990,12 @@ def main():
 #    aufgabe_2_5(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 2.6
 #    aufgabe_2_6(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.7
-    aufgabe_2_7(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.7
+#    aufgabe_2_7(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 2.8
 #    aufgabe_2_8(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.9
-#    aufgabe_2_9(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 2.9
+    aufgabe_2_9(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 2.10
 #    aufgabe_2_10(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 2.11
