@@ -1975,48 +1975,48 @@ def main():
     # Bildverarbeitung, siehe Folie 17)  erstellen
     # TODO: ok so?
     szinti, pixel, pixel_quadrant = make_szinti()
-    # Aufruf Aufgabe 1.1
-    aufgabe_1_1(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.1
-    aufgabe_2_1(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.2
-    aufgabe_2_2(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.3
-    aufgabe_2_3(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.4
-    aufgabe_2_4(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.5
-    aufgabe_2_5(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.6
-    aufgabe_2_6(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.7
-    aufgabe_2_7(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.8
-    aufgabe_2_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.9
-    aufgabe_2_9(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.10
-    aufgabe_2_10(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 2.11
-    aufgabe_2_11(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.1
-    aufgabe_3_1()
-    # Aufruf Aufgabe 3.2
-    aufgabe_3_2(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 1.1
+#    aufgabe_1_1(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.1
+#    aufgabe_2_1(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.2
+#    aufgabe_2_2(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.3
+#    aufgabe_2_3(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.4
+#    aufgabe_2_4(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.5
+#    aufgabe_2_5(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.6
+#    aufgabe_2_6(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.7
+#    aufgabe_2_7(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.8
+#    aufgabe_2_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.9
+#    aufgabe_2_9(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.10
+#    aufgabe_2_10(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 2.11
+#    aufgabe_2_11(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.1
+#    aufgabe_3_1()
+#    # Aufruf Aufgabe 3.2
+#    aufgabe_3_2(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 3.3
     aufgabe_3_3(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.4
-    aufgabe_3_4(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.5
-    aufgabe_3_5(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.6
-    aufgabe_3_6(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.7
-    aufgabe_3_7(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.8
-    aufgabe_3_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.9
-    aufgabe_3_9(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.4
+#    aufgabe_3_4(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.5
+#    aufgabe_3_5(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.6
+#    aufgabe_3_6(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.7
+#    aufgabe_3_7(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.8
+#    aufgabe_3_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.9
+#    aufgabe_3_9(szinti, pixel, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
 
