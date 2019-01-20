@@ -21,7 +21,6 @@ import matplotlib.pyplot as plt
 from prettytable import PrettyTable
 import copy
 from matplotlib.colors import LogNorm
-import numba
 import time
 
 
@@ -42,10 +41,9 @@ def make_scale(image):
     # Berechnung Skalierungsfaktor, sodass hoechster Grauwert erfasst wird
     skal = weiß / hoechster_grauwert
     # Skalierungsfaktor auf gesamtes Szintigramm anwenden
-    # TODO: funktioniert nicht wenn image int32-Werte, nur float!
-    image *= skal
+    image = skal * image
     # Zuordnung auf 255 Grauwerte
-    image = np.int_(image)
+    image = np.int_(np.round(image))
     return image
 
 
@@ -527,6 +525,9 @@ def differenzbild(image):
     differenz_image += konstante
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
     differenz_image = make_scale(differenz_image)
+    plot("Differenzbild", r'$x/mm$', r'$y/mm$', differenz_image)
+    plt.savefig("Aufgabe_2_6_Diff_image", dpi=300)
+    plt.show()
     return differenz_image
 
 
@@ -629,7 +630,7 @@ def plot_fourier(power, amplitude, phase, herkunft):
     axs[1].imshow(amplitude, cmap='gray', norm=LogNorm(),
                   extent=[-0.5, 0.5, -0.5, 0.5])
     # Phasenbild
-    axs[2].imshow(phase, cmap='gray', norm=LogNorm(),
+    axs[2].imshow(phase, cmap='hsv',
                   extent=[-0.5, 0.5, -0.5, 0.5])
     
     
@@ -660,8 +661,7 @@ def transformation(image, pixel_mitte, transform):
         ----------
         image: Array, Eingabewerte.
 
-        pixel_mitte: Pixel, bei dem Mitte des Koordinaensystems liegt.
-        TODO: nicht immer perfekt eingehalten?
+        pixel_mitte: Koordinatenwert des mittleren Pixels.
         
         transform: Transformationsmatrix, die Transformation eines Bildes
         durchfuehrt.
@@ -728,22 +728,21 @@ def make_kreisfilter(image, anteil, pixel_mitte):
         ----------
         image: Array, Eingabewerte.
 
-        anteil: Anteil der Nyquistfrequenz, welche obere Grenzfrequenz des
-        Tiefpassfilters bestimmt.
-
-        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
+        pixel_mitte: Abstand des Mittelpunktes vom Bild zum Bildrand.
     """
     filter_kreis = np.zeros_like(image)
-    # TODO: pixel_mitte (128) ≙ Nyquist-Frequenz. warum?
     # Radius eines Kreises berechnen, welcher tiefe Frequenzen durchlässt
     # (definiert obere Grenzfrequenz des Tiefpassfilters)
-    radius = pixel_mitte * anteil       # TODO: pixel_mitte = 128 = ν_Nvquist?
-                                        # nur in diesem Fall: Allgemein?
+    # Bild geht in diesem Fall von -128 ... 128
+    # das heißt die Nyquistfrequenz entspricht dem Abstand vom Mittelpunkt
+    # zum Rand (hier pixel_mitte (128))
+    radius = pixel_mitte * anteil
     for x in range(len(image)):
         for y in range(len(image)):
             deltax = pixel_mitte - x
             deltay = pixel_mitte - y
             if deltax**2 + deltay**2 <= radius**2:
+                # TODO: richtig?
                 filter_kreis[y, x] = 1
     return filter_kreis
 
@@ -773,6 +772,7 @@ def use_filter(image, filter_image):
     return image_gefiltert
 
 
+# TODO: falsch?
 def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
     """ Erstellt Bandpassfilter mit einem bestimmten erlaubten Frequenzbereich.
 
@@ -799,26 +799,6 @@ def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
     return filter_band
 
 
-def make_hochpassfilter(image, anteil, pixel_mitte):
-    """ Erstellt Hochpassfilter (in Groeße eines Bildes 'image',
-        Filterform Kreis), welcher nur hohe Frequenzen durchlaesst.
-    
-        Parameter:
-        ----------
-        image: Array, Eingabewerte.
-
-        anteil: Anteil der Nyquistfrequenz, welche untere Grenzfrequenz des
-        Bandpassfilters darstellt.
-
-        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
-    """
-    # Erstellung Kreisfilter
-    filter_kreis = make_kreisfilter(image, anteil, pixel_mitte)
-    # inverser Kreis- ist Hochpassfilter
-    filter_hochpass = 1 - filter_kreis
-    return filter_hochpass
-
-
 def make_graukeil(anz_pixel, anz_grauwerte):
     """ Erstellt einen linearen (quadratischen) Graukeil (mit bestimmter
         Anzahl Grauwerte).
@@ -830,7 +810,8 @@ def make_graukeil(anz_pixel, anz_grauwerte):
         anz_grauwerte: Anzahl der Grauwerte, die im Graukeil enthalten sein
         sollen.
     """
-    graukeil = np.ones((anz_pixel, anz_pixel)) * np.arange(anz_grauwerte)
+    graukeil = np.int_(np.ones((anz_pixel,
+                                anz_pixel)) * np.arange(anz_grauwerte))
     return graukeil
 
 
@@ -850,31 +831,30 @@ def make_kennlinien(function_unten, function_oben, anz_grauwerte):
         enthalten sein sollen.
     """
     # Funktion
-    function = np.arange(anz_grauwerte)
+    function = np.int_(np.arange(anz_grauwerte))
     # Transformationsfunktion (Kennlinien erzeugen)
     # linear
     kennlinie_linear = function
     # negativ linear
     kennlinie_negativ = (anz_grauwerte - 1) - function
     # quadratisch
-    kennlinie_quadr = function**2 / (anz_grauwerte - 1)
+    kennlinie_quadr = np.int_(np.round(function**2 / (anz_grauwerte - 1)))
     # Wurzel
-    kennlinie_sqrt = np.sqrt(anz_grauwerte * function)
+    kennlinie_sqrt = np.int_(np.round(np.sqrt(anz_grauwerte * function)))
     # binarisiert
     kennlinie_binaer = (function >= function_unten) * \
-                       (function <= function_oben) * anz_grauwerte
+                       (function <= function_oben) * (anz_grauwerte - 1)
     # Gauß:
     # Standardabweichung fuer Gaußverteilung
     std = 85
     # Mittelwert fuer Gaußverteilung
     mue = 0
-    kennlinie_gauss = 258 - (54942 / (np.sqrt(2 * np.pi)) * std) * \
-        np.exp(-(function - mue)**2 / (2 * std**2))
+    kennlinie_gauss = np.int_(np.round((258 - (54942 / (np.sqrt(2 * np.pi)  *
+                        std) * np.exp(-(function - mue)**2 / (2 * std**2))))))
     return [kennlinie_linear, kennlinie_negativ, kennlinie_quadr,
             kennlinie_sqrt, kennlinie_binaer, kennlinie_gauss]
 
 
-# TODO: Vgl
 def use_kennlinien(graukeil, kennlinien):
     """ wendet Kennlinien auf linearen Graukeil (derselben Größe) an.
 
@@ -891,16 +871,8 @@ def use_kennlinien(graukeil, kennlinien):
         graukeil_kennlinie = np.zeros_like(graukeil)
         for x in range(len(graukeil)):
             for y in range(len(graukeil)):
-                graukeil_kennlinie[y, x] = kennlinie[np.int
-                                                    (round(graukeil[y, x]))]
-#                # Skalieren der Zahlenwerte, sodass Grauwerte von
-#                # 0...255 umfasst werden
-#                graukeil_kennlinie = make_scale(graukeil_kennlinie)
-#                # make_scale funktioniert gar nicht, obwohl es float-Zahlen
-#                # sind!
+                graukeil_kennlinie[y, x] = kennlinie[(graukeil[y, x])]
         graukeile.append(graukeil_kennlinie)
-        # TODO: soll nach anwendung der Kennlinien transformierten Graukeile
-        # ebenfalls 256 Grauwerte aufweisen) (dh make_scale anwenden?)
     return graukeile
 
 
@@ -917,13 +889,10 @@ def plot_graukeile_transform(graukeile):
     axs = axs.ravel()
     # Ueberschriften der einzelnen Subplots
     # TODO: in Schleife?
-    axs[0].set_title("Linear")
-    axs[1].set_title("Negativ linear")
-    axs[2].set_title("Quadratisch")
-    axs[3].set_title("Wurzel")
-    axs[4].set_title("Binarisiert")
-    axs[5].set_title("Gauss")
+    ueberschrift = ["Linear", "Negativ linear", "Quadratisch", "Wurzel",
+                    "Binarisiert", "Gauss"]
     for i in range(6):
+        axs[i].set_title(ueberschrift[i])
         axs[i].imshow(graukeile[i], cmap='gray', extent=[-128, 128, -128, 128])
         axs[i].set_xlabel(r'$x/mm$')
         axs[i].set_ylabel(r'$y/mm$') 
@@ -961,7 +930,7 @@ def use_filter3x3_image(image, filter_art=None):
     # Schleife: jeden Pixel einzeln durchgehen (bis auf aeußere Pixel
     # (-Randbereich)), da diese von Filter nicht beruecksichtigt wird:
     # (aeußere Rand-Pixel werden auf Null gesetzt)
-    image_gefiltert = np.zeros((len(image), len(image)))
+    image_gefiltert = np.int_(np.zeros((len(image), len(image))))
     for x in range(1, len(image)-1):
         for y in range(1, len(image)-1):
             # Filterbereich, der einzeln (fuer jeden Pixel) wirksam wird (3x3)
@@ -1048,7 +1017,6 @@ def filter_sobel_image(image):
     # y-Richtung), entsprechend Vorlesung Folien 154f des Modul
     # MF-MRS_14 Digitale Bildverarbeitung)
     image_sobel_ges = np.abs(image_sobel_x) + np.abs(image_sobel_y)
-    image_sobel_ges = make_scale(image_sobel_ges)
     return image_sobel_ges
 
 
@@ -1060,15 +1028,13 @@ def robertsfilter(image):
         ----------
         image: Array, Eingabewerte.
     """
-    image_robert = np.zeros((len(image), len(image)))
+    image_robert = np.int_(np.zeros((len(image), len(image))))
     # Berechnung nach Differenzverfahren entsprechend der Vorlesung,
     # Folie 43f aus dem Modul MF-MRS_14 Digitale Bildverarbeitung
     for x in range(len(image)-1):
         for y in range(len(image)-1):
             image_robert[y, x] = np.abs(image[y, x] - image[y+1, x+1]) + \
                                  np.abs(image[y, x+1] - image[y+1, x])
-    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    image_robert = make_scale(image_robert)
     return image_robert
 
 
@@ -1099,7 +1065,6 @@ def plot(ueberschrift, abszisse, ordinate, image, aufgabe_3_6=False):
     plt.xlabel(abszisse)
     plt.ylabel(ordinate)
     
-
 
 def use_schwellwert(image, schwelle_unten, schwelle_oben):
     """ Funktion segmentiert mittels Schwellwertverfahren und a priori
@@ -1191,7 +1156,7 @@ def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     quadrant_vier = use_filter3x3_image(quadrant_vier)
     # a priori werden Schwellwertgrenzen festgelegt, wodurch lediglich Kanten
     # extrahiert werden
-    # kein Skalieren?
+    # TODO: kein Skalieren???
     quadrant_vier_kanten = make_logic_image(quadrant_vier, 120)
     # Extrahieren (nur) der (x- und y-) Koordinaten, bei denen Bildfunktion
     # f(x) ungleich 0
@@ -1255,7 +1220,7 @@ def hough_trafo(koord_x, koord_y):
                  "- Hough-Transformation zur Erkennung der Seiten des \n"
                  "Dreieckes aus Flaechenquelle D, Aufgabe 1.1 -",
                  r'Winkel $ϕ/°$', r'Abstand zum Mittelpunkt $d/mm$', winkel,
-                 abstaende, "Anzahl an d-α-Punkten")
+                 abstaende, "Anzahl an d-α-Paaren")
     
     
 def calc_schwerpkt_1d(image):
@@ -1413,7 +1378,7 @@ def make_uebergangsmatrix(image):
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle("Uebergangsmatrix", fontsize=16)
     # TODO: uebergange sind komische float-Zahlen?
-    image = plt.imshow(ubergange, norm=LogNorm())
+    image = plt.imshow(ubergange, cmap='PuRd', norm=LogNorm())
     plt.colorbar(image, shrink=0.6, label="relative Haeufigkeit der " +
                  "entsprechenden Grauwertuebergaenge")
     plt.tight_layout(rect=[0, 0, 1, 1.1])
@@ -1519,7 +1484,6 @@ def aufgabe_2_5(szinti, pixel, pixel_quadrant):
     infogehalt_einzelne_bitebenen(ebene, "Aufgabe 1.1")
     
 
-# TODO: ist relativ langsam. Numba?
 def aufgabe_2_6(szinti, pixel, pixel_quadrant):
     """ Berechnet aus Aufgabe 1.1 ein Differenzbild. Von diesem Differenzbild
         wird ein Histogramm erzeugt sowie dessen mittlerer Informationsgehalt
@@ -1528,15 +1492,15 @@ def aufgabe_2_6(szinti, pixel, pixel_quadrant):
     print("")
     print("Aufgabe 2.6:")
     print("")
-    # Plot Histogramm fuer Originalbild aus Aufgabe 1.1
-    erstelle_grauwerthist(szinti.flatten(), "das Bild aus Aufgabe 1.1")
-    plt.savefig("Aufgabe_2_6_Original", dpi=300)
-    plt.show()
     # Erstellung Differenzbild
     differenz = differenzbild(szinti)
+    # Plot Histogramm fuer Originalbild aus Aufgabe 1.1
+    erstelle_grauwerthist(szinti.flatten(), "das Bild aus Aufgabe 1.1")
+    plt.savefig("Aufgabe_2_6_Original_grauhist", dpi=300)
+    plt.show()
     # Plot Histogramm des Differenzbildes
     erstelle_grauwerthist(differenz.flatten(), "das Differenzbild")
-    plt.savefig("Aufgabe_2_6_Differenz", dpi=300)
+    plt.savefig("Aufgabe_2_6_Differenz_grauhist", dpi=300)
     plt.show()
     # Berechnung mittlerer Informationsgehalt pro Pixel fuer das Originalbild
     info_original = infogehalt(szinti)
@@ -1576,9 +1540,8 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     dreh = drehmatrix(30)
     # Erstellung gedrehtes Originalbild Ortsraum
     szinti_transform = transformation(szinti, pixel_quadrant, dreh)
-    # TODO: manchmal ist szinti_transform nicht 255: scale??
-    # kann man aber nicht machen!
-    # (funktioniert gar nicht)
+    # Skalieren TODO!!
+    szinti_transform = make_scale(szinti_transform)
     # Plots fuer Ortsraum Originalbild und gedrehtes Bild erstellen:
     ax1, ax2 = plot_vorbereitung_2sp('Ortsraum', 'Originalbild aus ' +
                                      'Aufgabe 1.1', 'um 30° gedrehtes Bild',
@@ -1593,7 +1556,6 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     _, power, _, _ = calculate_fourier(szinti)
     # Erstellung gedrehtes Leistungsspektrum
     power_transform = transformation(power, pixel_quadrant, dreh)
-    # TODO: hier auch scale da Transformation??? aber unsinnig
     # Plots fuer Frequenzraum Originalbild und gedrehtes Bild erstellen:
     ax3, ax4 = plot_vorbereitung_2sp('Frequenzraum - Leistungsspektrum',
                                      'Originalbild aus Aufgabe 1.1',
@@ -1612,7 +1574,7 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
           
 def aufgabe_2_9(szinti, pixel, pixel_quadrant):
     """ Anwendung eines Tiefpassfilters mit einer oberen Grenzfrequenz von
-        |ν_lim| = 0.25 ∙ ν_Nvquist auf das Bild aus Aufgabe 1.1.
+        |ν_lim| = 0.25 ∙ ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
     print("")
     print("Aufgabe 2.9:")
@@ -1622,13 +1584,12 @@ def aufgabe_2_9(szinti, pixel, pixel_quadrant):
     # Anwendung des Tiefpassfilters auf Originalbild
     szinti_gefiltert = use_filter(szinti, filter_tief)
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    # TODO: wirklich noetig?
     szinti_gefiltert = make_scale(szinti_gefiltert)
     # Erstellung Plots fuer graphische Darstellung Originalbild und
     # gefiltertes Bild
     ax1, ax2 = plot_vorbereitung_2sp('Tiefpassfilterung \n'
                                      '(obere Grenzfrequenz: ' +
-                                     '|ν_lim| = 0.25 ∙ ν_Nvquist)',
+                                     '|ν_lim| = 0.25 ∙ ν_Nyquist)',
                                      'Originalbild', 'gefiltertes Bild',
                                      r'$x/mm$', r'$y/mm$')
     # Plot Originalbild
@@ -1641,7 +1602,7 @@ def aufgabe_2_9(szinti, pixel, pixel_quadrant):
     
 def aufgabe_2_10(szinti, pixel, pixel_quadrant):
     """ Anwendung eines Bandpassfilters mit einem erlaubten Frequenzbereich von
-        3/8 ∙ ν_Nvquist < |ν| < 5/8 ∙ ν_Nvquist auf das Bild aus Aufgabe 1.1.
+        3/8 ∙ ν_Nyquist < |ν| < 5/8 ∙ ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
     print("")
     print("Aufgabe 2.10:")
@@ -1656,10 +1617,10 @@ def aufgabe_2_10(szinti, pixel, pixel_quadrant):
     # Erstellung Plots fuer graphische Darstellung Originalbild und
     # gefiltertes Bild
     ax1, ax2 = plot_vorbereitung_2sp('Bandpassfilterung \n'
-                                    '(erlaubter Frequenzbereich: ' +
-                                    '3/8 ∙ ν_Nvquist < |ν| < 5/8 ∙ ν_Nvquist)',
-                                    'Originalbild', 'gefiltertes Bild',
-                                    r'$x/mm$', r'$y/mm$')
+                                     '(erlaubter Frequenzbereich: ' +
+                                     '3/8 ∙ ν_Nyquist < |ν| < 5/8 ∙ ν_Nyquist)',
+                                     'Originalbild', 'gefiltertes Bild',
+                                     r'$x/mm$', r'$y/mm$')
     # Plot Originalbild
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
     # Plot gefiltertes Bild
@@ -1667,16 +1628,16 @@ def aufgabe_2_10(szinti, pixel, pixel_quadrant):
     plt.savefig("Aufgabe_2_10", dpi=300)
     plt.show()
         
-        
+# TODO: ist das richtig? hochpassfkt loeschen und diagramme besser
 def aufgabe_2_11(szinti, pixel, pixel_quadrant):
     """ Anwendung eines Hochpassfilters mit einem erlaubten Frequenzbereich
-        von 3/4 ∙ ν_Nvquist < |ν| < ν_Nvquist auf das Bild aus Aufgabe 1.1.
+        von 3/4 ∙ ν_Nyquist < |ν| < ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
     print("")
     print("Aufgabe 2.11:")
     print("")
     # Erzeugung Hochpassfilter (in Groeße des Originalbildes)
-    filter_hochpass = make_hochpassfilter(szinti, (3 / 4), pixel_quadrant)
+    filter_hochpass = bandpassfilter(szinti, (3 / 4), 1, pixel_quadrant)
     # Anwendung des Hochpassfilters auf Originalbild
     szinti_gefiltert = use_filter(szinti, filter_hochpass)
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
@@ -1686,7 +1647,7 @@ def aufgabe_2_11(szinti, pixel, pixel_quadrant):
     # gefiltertes Bild
     ax1, ax2 = plot_vorbereitung_2sp('Hochpassfilterung \n'
                                      '(erlaubter Frequenzbereich: ' +
-                                     '3/4 ∙ ν_Nvquist < |ν| < ν_Nvquist',
+                                     '3/4 ∙ ν_Nyquist < |ν| < ν_Nyquist',
                                      'Originalbild', 'gefiltertes Bild',
                                      r'$x/mm$', r'$y/mm$')
     # Plot Originalbild
@@ -1733,9 +1694,8 @@ def aufgabe_3_2(szinti, pixel, pixel_quadrant):
     # Transformationsmatrix auf Bild aus Aufgabe 1.1 anwenden
     # (positive Drehung um 90°, Scherung)
     szinti_transform = transformation(szinti, pixel_quadrant, transform)
-#    # TODO: Skalieren notwendig, funktioniert aber nicht mit int-werten?
-#    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-#    szinti_transform = make_scale(szinti_transform)
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    szinti_transform = make_scale(szinti_transform)
     # Plots (fuer Originalbild und transformiertes Bild aus Aufgabe 1.1)
     # erstellen
     ax1, ax2 = plot_vorbereitung_2sp('Ortsraum', 'Originalbild ' +
@@ -1763,9 +1723,13 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     # Anwendung Filter auf das Bild aus Aufgabe 1.1:
     # Mittelwertfilter
     szinti_filter_avg = use_filter3x3_image(szinti, mittelwertfilter)
-    # Medianfilter
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    szinti_filter_avg = make_scale(szinti_filter_avg)
+    # Medianfilter/ Binomialfilter
+    # TODO: skalieren? float
     szinti_filter_med = use_filter3x3_image(szinti)
     # Binomialfilter
+    # TODO: float
     szinti_filter_bin = use_filter3x3_image(szinti, binfilter)
     # Erstellung Grauwertprofile entlang y-Linie = 60:
     # fuer Originalbild aus Aufgabe 1.1
@@ -1789,7 +1753,6 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
                                 'Grauwert')
     # Anlegen einer Liste, welche einzelnen (gefilterten) Bilder und die
     # entsprechenden Grauwertprofile enthaelt
-    # TODO: szinti geht manchmal nicht bis 255?
     bilder = [szinti, szinti_filter_avg, szinti_filter_med,
               szinti_filter_bin, grauprofil_60_szinti, grauprofil_60_avg,
               grauprofil_60_med, grauprofil_60_bin]
@@ -1810,9 +1773,8 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
                  "Binomialfilter"]
     for i in range(4, 8):
         plt.plot((np.arange(-pixel_quadrant, pixel_quadrant)), bilder[i], 
-                 label=filterart[4-i])
+                 label=filterart[4-i], linewidth=0.5)
     plt.legend(loc='upper right', frameon=True, fontsize=8)
-    # TODO: Linien dünner machen!
     plt.savefig("Aufgabe_3_3_Grauwertprofile", dpi=300)
     plt.show()
 
@@ -1823,7 +1785,6 @@ def aufgabe_3_4(szinti, pixel, pixel_quadrant):
     print("")
     print("Aufgabe 3.4:")
     print("")
-    # TODO: szinti manchmal nur bis 254??
     # Anwendung Sobelfilter aufs Bild aus Aufgabe 1.1
     szinti_sobel_ges = filter_sobel_image(szinti)
     # Anwendung Roberts-Filter aufs Bild aus Aufgabe 1.1
@@ -1853,9 +1814,6 @@ def aufgabe_3_5(szinti, pixel, pixel_quadrant):
     laplacefilter = make_laplacefilter()
     # Anwendung Laplacefilter aufs Bild aus Aufgabe 1.1
     szinti_laplace = use_filter3x3_image(szinti, laplacefilter)
-    # TODO: ebenfalls nur 254 Grauwerte??
-    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    szinti_laplace = make_scale(szinti_laplace)
     # Plot des Bildes aus Aufgabe 1.1 nach Anwendung eines Laplacefilters
     # mit einer 8er Nachbarschaft
     plot('Anwendung eines Laplacefilters (8er Nachbarschaft) \n'
@@ -1871,11 +1829,11 @@ def aufgabe_3_6(szinti, pixel, pixel_quadrant):
     print("")
     print("Aufgabe 3.6:")
     print("")
-    # TODO: auch hier ist szinti max. 254?
     # vor Anwendung Schwellwertverfahren (a priori) Glaettung mit
     # Medianfilter zur Erzeugung zusammenhaengender Gebiete, sodass Loecher in
     # Flächen teilweise aufgefuellt
     szinti_bearbeitet = use_filter3x3_image(szinti)
+    # TODO: skalieren??
     # aus der a priori Kenntnis von Flaechenquelle D (Parameter siehe
     # Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Aufgabe 1.1
     # (Folie 17)) werden aus (geglaetteten) Grauwerthistogramm Schwellwerte
@@ -2019,7 +1977,6 @@ def main():
 #    aufgabe_3_9(szinti, pixel, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
-
 #    # Zeit messen:
 #    # fuer Zeitmessung:
 #    t1 = time.time()
