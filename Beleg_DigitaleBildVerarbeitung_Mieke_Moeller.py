@@ -335,10 +335,8 @@ def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
 
 # TODO: ist relativ langsam. Numba?
 def erstelle_grauwerthist(werte, herkunft):
-    """ Erstellung Grauwertprofil, Darstellung auf zwei Weisen:
-        1. logarithmischer Skaleneinteilung,
-        2. Zur besseren Darstellung kleinerer Werte ist Ordinatenachse bei
-        bestimmten Wert abgeschnitten.
+    """ Erstellung Grauwertprofil, zur besseren Darstellung kleinerer Werte
+        ist Ordinatenachse bei bestimmten Wert abgeschnitten.
 
         Parameter:
         ----------
@@ -347,12 +345,15 @@ def erstelle_grauwerthist(werte, herkunft):
         herkunft: bezeichnet jenes Bild, welches zur Erstellung des Grauwert-
         histogramms genutzt wird.
     """
-    ax1, ax2 = plot_vorbereitung_2sp(f'''Grauwerthistogramm fuer ''' +
-                    f'''{herkunft}''', 'logarithmische Skala',
-                    f'''gekuerzte Ordinatenachse''', r'$f$',
-                    f''''Häufigkeitsverteilung $h(f)$''')
-    ax1.hist(werte, bins=256, density=True, log=True)
-    ordinate, _, _ = ax2.hist(werte, bins=256, density=True)
+    fig = plt.figure(figsize=(10, 5))
+    # Hinzufuegen der Ueberschrift zum Plot
+    fig.suptitle(f'''Grauwerthistogramm fuer {herkunft}''', fontsize=16)
+    # Hinzufuegen einer Unterueberschrift
+    plt.title('mit gekuerzter Ordinatenachse')
+    # Achsenbeschriftungen
+    plt.xlabel(r'$f$')
+    plt.ylabel('Häufigkeitsverteilung $h(f)$')
+    ordinate, _, _ = plt.hist(werte, bins=256, density=True)
     # Ordinatenwerte sortieren
     ordinate_sort = np.sort(ordinate)
     # Ordinatenachse kuerzen
@@ -1017,6 +1018,8 @@ def filter_sobel_image(image):
     # y-Richtung), entsprechend Vorlesung Folien 154f des Modul
     # MF-MRS_14 Digitale Bildverarbeitung)
     image_sobel_ges = np.abs(image_sobel_x) + np.abs(image_sobel_y)
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    image_sobel_ges = make_scale(image_sobel_ges)
     return image_sobel_ges
 
 
@@ -1035,6 +1038,8 @@ def robertsfilter(image):
         for y in range(len(image)-1):
             image_robert[y, x] = np.abs(image[y, x] - image[y+1, x+1]) + \
                                  np.abs(image[y, x+1] - image[y+1, x])
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    image_robert = make_scale(image_robert)
     return image_robert
 
 
@@ -1156,7 +1161,6 @@ def szinti_vorverarbeitung_3_7(szinti, pixel, pixel_quadrant):
     quadrant_vier = use_filter3x3_image(quadrant_vier)
     # a priori werden Schwellwertgrenzen festgelegt, wodurch lediglich Kanten
     # extrahiert werden
-    # TODO: kein Skalieren???
     quadrant_vier_kanten = make_logic_image(quadrant_vier, 120)
     # Extrahieren (nur) der (x- und y-) Koordinaten, bei denen Bildfunktion
     # f(x) ungleich 0
@@ -1311,7 +1315,7 @@ def medianfilter_5x5(image):
     # Schleife: jeden Pixel einzeln durchgehen (bis auf aeußeren (Rand-)
     # Pixel, da dieser von Filter nicht beruecksichtigt werden:
     # aeußeren Rand-Pixel werden auf Null gesetzt
-    image_gefiltert = np.zeros((len(image), len(image)))
+    image_gefiltert = np.int_(np.zeros((len(image), len(image))))
     for x in range(2, len(image)-2):
         for y in range(2, len(image)-2):
             # Filterbereich, der einzeln (fuer jeden Pixel) wirksam wird (5x5)
@@ -1333,11 +1337,6 @@ def szinti_vorbereitung_3_9(szinti, pixel, pixel_quadrant):
     # Einteilung Bild aus Aufgabe 1.1 in Teilbilder:
     # Extraktion des linken oberen Quadranten (Flaechenquelle B)
     szinti = extract(szinti, 0, pixel_quadrant, 0, pixel_quadrant)
-#    # Kontrolldarstellung
-#    plt.figure()
-#    # Hinzufuegen der Ueberschrift zum Plot
-#    plt.suptitle("Originalbild", fontsize=16)
-#    plt.imshow(szinti, cmap='gray')
     # mehrmalige Anwendung von Medianfiltern (verschiedener Groeße), um
     # Bildrauschen (durch radioaktivem Zerfall) zu reduzieren, aber Lage
     # und Steilheit vom Bild erhalten! (Kombination durch Ausprobieren):
@@ -1347,12 +1346,6 @@ def szinti_vorbereitung_3_9(szinti, pixel, pixel_quadrant):
     # zweimaliges Anwenden eines 3x3 Medianfilters
     for i in range(2):
         szinti = use_filter3x3_image(szinti)
-    szinti = np.int_(szinti)
-#    # Kontrolldarstellung
-#    plt.figure()
-#    # Hinzufuegen der Ueberschrift zum Plot
-#    plt.suptitle("gefiltertes Bild", fontsize=16)
-#    plt.imshow(szinti, cmap='gray')
     return szinti
 
 
@@ -1407,7 +1400,8 @@ def aufgabe_2_1(szinti, pixel, pixel_quadrant):
     print("")
     # Extrahieren Grauwerte entlang von bestimmten y- Linien
     # (siehe Aufgabenstellung):
-    # laengs y = 60, mit Umrechnung globales/lokales Koordinatensystem
+    # laengs y = 60, mit Umrechnung globales (entsprechend Vorlesungsskript)/
+    # lokales (entsprechend numpy-Notation) Koordinatensystem
     grauwertprofil_60 = extraktion_aus_array(szinti, pixel_quadrant - 60)
     # laengs y = -60, mit Umrechnung globales/lokales Koordinatensystem
     grauwertprofil_minus60 = extraktion_aus_array(szinti, pixel_quadrant + 60)
@@ -1540,7 +1534,7 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     dreh = drehmatrix(30)
     # Erstellung gedrehtes Originalbild Ortsraum
     szinti_transform = transformation(szinti, pixel_quadrant, dreh)
-    # Skalieren TODO!!
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
     szinti_transform = make_scale(szinti_transform)
     # Plots fuer Ortsraum Originalbild und gedrehtes Bild erstellen:
     ax1, ax2 = plot_vorbereitung_2sp('Ortsraum', 'Originalbild aus ' +
@@ -1610,7 +1604,6 @@ def aufgabe_2_10(szinti, pixel, pixel_quadrant):
     # Erzeugung Bandpassfilter (in Groeße des Originalbildes)
     filter_band = bandpassfilter(szinti, (5 / 8),  (3 / 8), pixel_quadrant)
     # Anwendung des Bandpassfilters auf Originalbild
-    # TODO: wirklich noetig?
     szinti_gefiltert = use_filter(szinti, filter_band)
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
     szinti_gefiltert = make_scale(szinti_gefiltert)
@@ -1630,22 +1623,21 @@ def aufgabe_2_10(szinti, pixel, pixel_quadrant):
         
 # TODO: ist das richtig? hochpassfkt loeschen und diagramme besser
 def aufgabe_2_11(szinti, pixel, pixel_quadrant):
-    """ Anwendung eines Hochpassfilters mit einem erlaubten Frequenzbereich
+    """ Anwendung eines Bandpassfilters mit einem erlaubten Frequenzbereich
         von 3/4 ∙ ν_Nyquist < |ν| < ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
     print("")
     print("Aufgabe 2.11:")
     print("")
-    # Erzeugung Hochpassfilter (in Groeße des Originalbildes)
-    filter_hochpass = bandpassfilter(szinti, (3 / 4), 1, pixel_quadrant)
-    # Anwendung des Hochpassfilters auf Originalbild
-    szinti_gefiltert = use_filter(szinti, filter_hochpass)
+    # Erzeugung Bandpassfilter (in Groeße des Originalbildes)
+    filter_bp = bandpassfilter(szinti, (3 / 4), 1, pixel_quadrant)
+    # Anwendung des Bandpassfilters auf Originalbild
+    szinti_gefiltert = use_filter(szinti, filter_bp)
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    # TODO: wirklich noetig?
     szinti_gefiltert = make_scale(szinti_gefiltert)
     # Erstellung Plots fuer graphische Darstellung Originalbild und
     # gefiltertes Bild
-    ax1, ax2 = plot_vorbereitung_2sp('Hochpassfilterung \n'
+    ax1, ax2 = plot_vorbereitung_2sp('Bandpassfilterung \n'
                                      '(erlaubter Frequenzbereich: ' +
                                      '3/4 ∙ ν_Nyquist < |ν| < ν_Nyquist',
                                      'Originalbild', 'gefiltertes Bild',
@@ -1723,39 +1715,35 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     # Anwendung Filter auf das Bild aus Aufgabe 1.1:
     # Mittelwertfilter
     szinti_filter_avg = use_filter3x3_image(szinti, mittelwertfilter)
-    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
-    szinti_filter_avg = make_scale(szinti_filter_avg)
     # Medianfilter/ Binomialfilter
-    # TODO: skalieren? float
     szinti_filter_med = use_filter3x3_image(szinti)
     # Binomialfilter
-    # TODO: float
     szinti_filter_bin = use_filter3x3_image(szinti, binfilter)
-    # Erstellung Grauwertprofile entlang y-Linie = 60:
+    # Erstellung Grauwertprofile entlang y-Linie = - 60 mm:
     # fuer Originalbild aus Aufgabe 1.1
-    grauprofil_60_szinti = extraktion_aus_array(szinti, pixel_quadrant - 60)
+    grauprofil_szinti = extraktion_aus_array(szinti, pixel_quadrant + 60)
     # fuer angewendeten 3x3-Mittelwertsfilter
-    grauprofil_60_avg = extraktion_aus_array(szinti_filter_avg,
-                                             pixel_quadrant - 60)
+    grauprofil_avg = extraktion_aus_array(szinti_filter_avg,
+                                             pixel_quadrant + 60)
     # fuer angewendeten 3x3-Medianfilter
-    grauprofil_60_med = extraktion_aus_array(szinti_filter_med,
-                                             pixel_quadrant - 60)
+    grauprofil_med = extraktion_aus_array(szinti_filter_med,
+                                             pixel_quadrant + 60)
     # fuer angewendeten 3x3-Binomialfilter
-    grauprofil_60_bin = extraktion_aus_array(szinti_filter_bin,
-                                             pixel_quadrant - 60)
+    grauprofil_bin = extraktion_aus_array(szinti_filter_bin,
+                                             pixel_quadrant + 60)
     # einzelne Subplots erstellen:
     axs = plot_vorbereitung_8sp('Vergleich verschiedener Glaettungsverfahren',
                                 ['Originalbild aus Aufgabe 1.1',
                                  '3x3-Mittelwertfilter', '3x3-Medianfilter',
                                  '3x3-Binomialfilter'],
                                 'entsprechendes Grauwertprofile \n'
-                                '- laengs y = 60 mm - ', r'$x/mm$', r'$y/mm$',
-                                'Grauwert')
+                                '- laengs y = - 60 mm - ', r'$x/mm$',
+                                r'$y/mm$', 'Grauwert')
     # Anlegen einer Liste, welche einzelnen (gefilterten) Bilder und die
     # entsprechenden Grauwertprofile enthaelt
     bilder = [szinti, szinti_filter_avg, szinti_filter_med,
-              szinti_filter_bin, grauprofil_60_szinti, grauprofil_60_avg,
-              grauprofil_60_med, grauprofil_60_bin]
+              szinti_filter_bin, grauprofil_szinti, grauprofil_avg,
+              grauprofil_med, grauprofil_bin]
     # Plot der (verschieden) gefilterten Bilder (aus Aufgabe 1.1)
     for i in range(4):
         axs[i].imshow(bilder[i], cmap='gray', extent=[-128, 128, -128, 128]) 
@@ -1769,6 +1757,11 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     fig = plt.figure(figsize=(6, 7))
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle("Vergleich Grauwertprofile der einzelnen Filter", fontsize=16)
+    # Hinzufuegen einer Unterueberschrift
+    plt.title('- laengs y = - 60 mm -')
+    # Achsenbeschriftungen
+    plt.xlabel(r'$x/mm$')
+    plt.ylabel('Grauwert')
     filterart = ["Originalbild", "Mittelwertfilter", "Medianfilter",
                  "Binomialfilter"]
     for i in range(4, 8):
@@ -1809,11 +1802,12 @@ def aufgabe_3_5(szinti, pixel, pixel_quadrant):
     print("")
     print("Aufgabe 3.5:")
     print("")
-    # TODO: szinti nur 254 Grauwerte??
     # Erstellung Laplace-Filter mit 8er Nachbarschaft
     laplacefilter = make_laplacefilter()
     # Anwendung Laplacefilter aufs Bild aus Aufgabe 1.1
     szinti_laplace = use_filter3x3_image(szinti, laplacefilter)
+    # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
+    szinti_laplace = make_scale(szinti_laplace)
     # Plot des Bildes aus Aufgabe 1.1 nach Anwendung eines Laplacefilters
     # mit einer 8er Nachbarschaft
     plot('Anwendung eines Laplacefilters (8er Nachbarschaft) \n'
@@ -1833,7 +1827,6 @@ def aufgabe_3_6(szinti, pixel, pixel_quadrant):
     # Medianfilter zur Erzeugung zusammenhaengender Gebiete, sodass Loecher in
     # Flächen teilweise aufgefuellt
     szinti_bearbeitet = use_filter3x3_image(szinti)
-    # TODO: skalieren??
     # aus der a priori Kenntnis von Flaechenquelle D (Parameter siehe
     # Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung, Aufgabe 1.1
     # (Folie 17)) werden aus (geglaetteten) Grauwerthistogramm Schwellwerte
@@ -1961,8 +1954,8 @@ def main():
 #    aufgabe_3_1()
 #    # Aufruf Aufgabe 3.2
 #    aufgabe_3_2(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.3
-    aufgabe_3_3(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.3
+#    aufgabe_3_3(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 3.4
 #    aufgabe_3_4(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 3.5
@@ -1973,8 +1966,8 @@ def main():
 #    aufgabe_3_7(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 3.8
 #    aufgabe_3_8(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.9
-#    aufgabe_3_9(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.9
+    aufgabe_3_9(szinti, pixel, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
 #    # Zeit messen:
