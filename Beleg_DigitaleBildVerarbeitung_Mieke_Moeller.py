@@ -5,16 +5,6 @@
 
     @author: Mieke Möller
 """
-# TODO: Style Code Analysis bei Karl angucken
-# TODO: Fkt make.szinti() unnoetigerweise sehr oft aufgerufen?
-# TODO: immer rescaled?
-# TODO: Ergebnisse vergleichen
-# TODO: Fkt unnoetigerweise doppelt aufgerufen?
-# TODO: welche Fkt sind wirklich nuetzlich?
-# TODO: Plotfkt immer angewendet?
-# TODO: Tritt irgendwo was doppelt auf?
-# TODO: Bezeichnung pixel_mitte?
-# TODO: Zeitausgabe loeschen
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,10 +26,10 @@ def make_scale(image):
     if np.min(image) != 0:
         image -= np.min(image)
     # hoechster Wert soll sein: 255 ≙ weiß
-    weiß = 255
+    weiss = 255
     hoechster_grauwert = np.max(image)
     # Berechnung Skalierungsfaktor, sodass hoechster Grauwert erfasst wird
-    skal = weiß / hoechster_grauwert
+    skal = weiss / hoechster_grauwert
     # Skalierungsfaktor auf gesamtes Szintigramm anwenden
     image = skal * image
     # Zuordnung auf 255 Grauwerte
@@ -47,7 +37,7 @@ def make_scale(image):
     return image
 
 
-def get_image_A(laenge_quadrant, kantenlaenge, avg_a, mittelpkt):
+def get_image_a(laenge_quadrant, kantenlaenge, avg_a, mittelpkt):
     """ Erzeugt Objekt A, ist Quadrat.
 
         Parameter:
@@ -81,7 +71,7 @@ def get_image_A(laenge_quadrant, kantenlaenge, avg_a, mittelpkt):
     return image_a
 
 
-def get_image_B(laenge_quadrant, kantenlaenge, avg_b_g, avg_b_w,
+def get_image_b(laenge_quadrant, kantenlaenge, avg_b_g, avg_b_w,
                 mittelpkt, deltax):
     """ Erzeugt Objekt B, ist Quadrat mit Streifen.
 
@@ -105,7 +95,6 @@ def get_image_B(laenge_quadrant, kantenlaenge, avg_b_g, avg_b_w,
     """
     # erstelle Array, in dem sich Flaechenquelle B befindet
     image_b = np.zeros((laenge_quadrant, laenge_quadrant))
-    # TODO: Erstellung dieses Quadrats doppelt sich, schlimm?
     # richtige Positionierung von Flaechenquelle B im Bezug zum Rand:
     # Abstand Quellenkante zum Rand in x- Richtung
     abstand_x = laenge_quadrant + mittelpkt[0] - kantenlaenge // 2
@@ -126,7 +115,7 @@ def get_image_B(laenge_quadrant, kantenlaenge, avg_b_g, avg_b_w,
     return image_b
 
 
-def get_image_C(laenge_quadrant, radius, avg_c, mittelpkt):
+def get_image_c(laenge_quadrant, radius, avg_c, mittelpkt):
     """ Erzeugt Objekt C, ist Kreis.
 
         Parameter:
@@ -144,7 +133,6 @@ def get_image_C(laenge_quadrant, radius, avg_c, mittelpkt):
     # erstelle Array, in dem sich Flaechenquelle C befindet
     image_c = np.zeros((laenge_quadrant, laenge_quadrant))
     # lokaler Mittelpunkt (als (x, y)), von diesem aus Kreis mit Radius 50 mm
-    # TODO: Berechnung Mittelpunkt lokal stimmt nur in diesem ganz speziellen
     # Fall? (ist nicht der Sinn von Parametern in Funktionen?)
     mitte_lokal = (laenge_quadrant + mittelpkt[0], -mittelpkt[1])
     # Kreisformel mit Satz des Pythagoras
@@ -160,7 +148,7 @@ def get_image_C(laenge_quadrant, radius, avg_c, mittelpkt):
     return image_c
 
 
-def get_image_D(laenge_quadrant, hoehe, avg_d, spitze):
+def get_image_d(laenge_quadrant, hoehe, avg_d, spitze):
     """ Erzeugt Objekt D, ist gleichseitiges Dreieck.
 
         Parameter:
@@ -178,8 +166,6 @@ def get_image_D(laenge_quadrant, hoehe, avg_d, spitze):
     # erstelle Array, in dem sich Flaechenquelle D befindet
     image_d = np.zeros((laenge_quadrant, laenge_quadrant))
     # Koordinaten der Spitze im lokalen Koordinatensystem:
-    # TODO: Berechnung lokale Spitze stimmt nur in diesem ganz speziellen
-    # Fall? (ist nicht der Sinn von Parametern in Funktionen?)
     spitze_lokal = (spitze[0], -spitze[1])
     # jeden Pixel der moeglichen Dreiecksflaeche einzeln durchgehen:
     # dabei wird y-Bereich von lokalen Spitze bis ... abgerastert:
@@ -265,13 +251,13 @@ def make_szinti():
     # Objekte dem richtigen Platz im Szintigramm zuweisen
     # (Parameter der einzelnen Flaechenquellen siehe Vorlesung zu Modul
     # MF-MRS_14 Digitale Bildverarbeitung Folie 17)
-    image_a = get_image_A(pixel_quadrant, 100, 200, (60, 60))
+    image_a = get_image_a(pixel_quadrant, 100, 200, (60, 60))
     quadrant_eins[:, :] = image_a
-    image_b = get_image_B(pixel_quadrant, 100, 250, 300, (-60, 60), 5)
+    image_b = get_image_b(pixel_quadrant, 100, 250, 300, (-60, 60), 5)
     quadrant_zwei[:, :] = image_b
-    image_c = get_image_C(pixel_quadrant, 50, 50, (-60, -60))
+    image_c = get_image_c(pixel_quadrant, 50, 50, (-60, -60))
     quadrant_drei[:, :] = image_c
-    image_d = get_image_D(pixel_quadrant, 100, 100, (60, -10))
+    image_d = get_image_d(pixel_quadrant, 100, 100, (60, -10))
     quadrant_vier[:, :] = image_d
     # Skalieren der Zahlenwerte, sodass Grauwerte von 0...255 umfasst werden
     szinti = make_scale(szinti)
@@ -293,7 +279,6 @@ def extraktion_aus_array(array, y):
     return teil_array
 
 
-# TODO: plot_vorbereitungen 2, 3 oder 9 Subplots in einer Fkt?
 def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
                           abszisse='', ordinate='', ticks=False):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Diagramm mit
@@ -333,7 +318,6 @@ def plot_vorbereitung_2sp(ueberschrift, unterueberschrift1, unterueberschrift2,
     return ax1, ax2
 
 
-# TODO: ist relativ langsam. Numba?
 def erstelle_grauwerthist(werte, herkunft):
     """ Erstellung Grauwertprofil, zur besseren Darstellung kleinerer Werte
         ist Ordinatenachse bei bestimmten Wert abgeschnitten.
@@ -438,7 +422,6 @@ def plot_vorbereitung_9sp(ueberschrift):
     return axs
 
 
-# TODO: Trennung von Berechnung und Plot?
 def erstellung_bitebenen(image):
     """ Erstellt und plottet Bitebenen Null bis Sieben eines Bildes sowie
         das Ursprungsbild mit entsprechender Beschriftung.
@@ -505,7 +488,7 @@ def infogehalt_einzelne_bitebenen(image, herkunft):
         # Hinzufuegen einzelner Zeilen zur PrettyTable
         x.add_row([(i), info_bit[i]])
     print(x)
-    
+
 
 def differenzbild(image):
     """ Funktion erstellt ein Differenzbild.
@@ -633,8 +616,8 @@ def plot_fourier(power, amplitude, phase, herkunft):
     # Phasenbild
     axs[2].imshow(phase, cmap='hsv',
                   extent=[-0.5, 0.5, -0.5, 0.5])
-    
-    
+
+
 def drehmatrix(grad):
     """ Drehung eines Bildes in positivem Drehsinne (siehe Vorlesung,
         Folie 88, 131 aus dem Modul MF-MRS_14 Digitale Bildverarbeitung).
@@ -695,7 +678,7 @@ def transformation(image, pixel_mitte, transform):
                 image_transform[y + pixel_mitte, x + pixel_mitte] = \
                     image[y_transform + pixel_mitte, x_transform + pixel_mitte]
     return image_transform
-       
+
 
 def transformationsmatrix(dreh):
     """ Transformation eines Bildes:
@@ -743,7 +726,6 @@ def make_kreisfilter(image, anteil, pixel_mitte):
             deltax = pixel_mitte - x
             deltay = pixel_mitte - y
             if deltax**2 + deltay**2 <= radius**2:
-                # TODO: richtig?
                 filter_kreis[y, x] = 1
     return filter_kreis
 
@@ -773,7 +755,6 @@ def use_filter(image, filter_image):
     return image_gefiltert
 
 
-# TODO: falsch?
 def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
     """ Erstellt Bandpassfilter mit einem bestimmten erlaubten Frequenzbereich.
 
@@ -787,7 +768,8 @@ def bandpassfilter(image, anteil_up, anteil_down, pixel_mitte):
         anteil_down: Anteil der Nyquistfrequenz, welche untere Grenzfrequenz
         des Bandpassfilters darstellt.
 
-        pixel_mitte: Pixel, bei dem hier Mitte des Koordinaensystems liegt.
+        pixel_mitte: Koordinate fuer Mitte des globalen Koordinatensystems
+        (entsprechend Vorlesugsskript)
     """
     # Teilkreis / -filter 1:
     filter_kreis1 = make_kreisfilter(image, anteil_up, pixel_mitte)
@@ -850,7 +832,7 @@ def make_kennlinien(function_unten, function_oben, anz_grauwerte):
     std = 85
     # Mittelwert fuer Gaußverteilung
     mue = 0
-    kennlinie_gauss = np.int_(np.round((258 - (54942 / (np.sqrt(2 * np.pi)  *
+    kennlinie_gauss = np.int_(np.round((258 - (54942 / (np.sqrt(2 * np.pi) *
                         std) * np.exp(-(function - mue)**2 / (2 * std**2))))))
     return [kennlinie_linear, kennlinie_negativ, kennlinie_quadr,
             kennlinie_sqrt, kennlinie_binaer, kennlinie_gauss]
@@ -889,16 +871,15 @@ def plot_graukeile_transform(graukeile):
     plt.tight_layout(w_pad=3.5, rect=[0, 0, 1, 0.95])
     axs = axs.ravel()
     # Ueberschriften der einzelnen Subplots
-    # TODO: in Schleife?
     ueberschrift = ["Linear", "Negativ linear", "Quadratisch", "Wurzel",
                     "Binarisiert", "Gauss"]
     for i in range(6):
         axs[i].set_title(ueberschrift[i])
         axs[i].imshow(graukeile[i], cmap='gray', extent=[-128, 128, -128, 128])
         axs[i].set_xlabel(r'$x/mm$')
-        axs[i].set_ylabel(r'$y/mm$') 
-    
-    
+        axs[i].set_ylabel(r'$y/mm$')
+
+
 def make_mittelwertfilter():
     """ Erstellung eines 3x3-Mittelwertfilters mit entsprechender Normierung
         (1 / 9).
@@ -983,7 +964,7 @@ def plot_vorbereitung_8sp(ueberschrift, sub_ueberschriften,
     for i in range(4):
         axs[i].set_title(sub_ueberschriften[i])
         axs[i].set_xlabel(abszisse)
-        axs[i].set_ylabel(ordinate1) 
+        axs[i].set_ylabel(ordinate1)
     for i in range(4, 8):
         axs[i].set_title(sub_ueberschrift_grau)
         axs[i].set_xlabel(abszisse)
@@ -1023,7 +1004,6 @@ def filter_sobel_image(image):
     return image_sobel_ges
 
 
-# TODO: Richtig?
 def robertsfilter(image):
     """ Anwendung eines Roberts-Filters auf ein Bild 'image'.
 
@@ -1050,8 +1030,7 @@ def make_laplacefilter():
     return laplace
 
 
-# oefter verwendet?
-def plot(ueberschrift, abszisse, ordinate, image, aufgabe_3_6=False):
+def plot(ueberschrift, abszisse, ordinate, image, aufgabe3_6=False):
     """ Vorbereitung fuer anschließenden Plot: Erstellung Figure mit
         Ueberschriften etc.
 
@@ -1062,14 +1041,14 @@ def plot(ueberschrift, abszisse, ordinate, image, aufgabe_3_6=False):
     fig = plt.figure(figsize=(6, 7))
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle(ueberschrift, fontsize=16)
-    if aufgabe_3_6:
+    if aufgabe3_6:
         plt.imshow(image, cmap='gray', extent=[-128, 128, -128, 128], vmax=255)
     else:
         plt.imshow(image, cmap='gray', extent=[-128, 128, -128, 128])
     # Achsenbeschriftungen
     plt.xlabel(abszisse)
     plt.ylabel(ordinate)
-    
+
 
 def use_schwellwert(image, schwelle_unten, schwelle_oben):
     """ Funktion segmentiert mittels Schwellwertverfahren und a priori
@@ -1225,8 +1204,8 @@ def hough_trafo(koord_x, koord_y):
                  "Dreieckes aus Flaechenquelle D, Aufgabe 1.1 -",
                  r'Winkel $ϕ/°$', r'Abstand zum Mittelpunkt $d/mm$', winkel,
                  abstaende, "Anzahl an d-α-Paaren")
-    
-    
+
+
 def calc_schwerpkt_1d(image):
     """ Funktion berechnet bestimmte Momente von Bildern und darauf aufbauend
         (in einer Dimension) den Schwerpunkt dieses Bildes entsprechend
@@ -1325,7 +1304,7 @@ def medianfilter_5x5(image):
     return image_gefiltert
 
 
-def szinti_vorbereitung_3_9(szinti, pixel, pixel_quadrant):
+def szinti_vorbereitung_3_9(szinti, pixel_quadrant):
     """ Funktion leistet Vorverarbeitung des Bildes aus Aufgabe 1.1 fuer
         anschließende Bestimmung von Grauwertuebergangsmatrizen. Dabei
         Anwendung verschiedener Filter und Aehnliches.
@@ -1370,14 +1349,13 @@ def make_uebergangsmatrix(image):
     fig = plt.figure(figsize=(6, 7))
     # Hinzufuegen der Ueberschrift zum Plot
     fig.suptitle("Uebergangsmatrix", fontsize=16)
-    # TODO: uebergange sind komische float-Zahlen?
     image = plt.imshow(ubergange, cmap='PuRd', norm=LogNorm())
     plt.colorbar(image, shrink=0.6, label="relative Haeufigkeit der " +
                  "entsprechenden Grauwertuebergaenge")
     plt.tight_layout(rect=[0, 0, 1, 1.1])
 
 
-def aufgabe_1_1(szinti, pixel, pixel_quadrant):
+def aufgabe_1_1(szinti):
     """ Darstellung eines aufgenommenen Szintigramms, bestehend aus 256x256
         Pixel, aufgebaut aus vier Flaechenquellen (weitere Parameter siehe
         Vorlesung zu Modul MF-MRS_14 Digitale Bildverarbeitung)
@@ -1391,7 +1369,7 @@ def aufgabe_1_1(szinti, pixel, pixel_quadrant):
     plt.show()
 
 
-def aufgabe_2_1(szinti, pixel, pixel_quadrant):
+def aufgabe_2_1(szinti, pixel_quadrant):
     """ Erstellt die Grauwertprofile fuer das Bild aus Aufgabe 1.1 laengs der
         Linien y = 60 mm und y = -60 mm.
     """
@@ -1415,9 +1393,9 @@ def aufgabe_2_1(szinti, pixel, pixel_quadrant):
              grauwertprofil_minus60)
     plt.savefig("Aufgabe_2_1", dpi=300)
     plt.show()
-    
 
-def aufgabe_2_2(szinti, pixel, pixel_quadrant):
+
+def aufgabe_2_2(szinti):
     """ Erstellt das Grauwerthistogramm des Bildes aus Aufgabe 1.1 und stellt
         es graphisch dar.
     """
@@ -1430,7 +1408,7 @@ def aufgabe_2_2(szinti, pixel, pixel_quadrant):
     plt.show()
 
 
-def aufgabe_2_3(szinti, pixel, pixel_quadrant):
+def aufgabe_2_3(szinti, pixel):
     """ Berechnet Mittelwert und Schiefe des Grauwert-Histogramms aus Aufgabe
         2.2.
     """
@@ -1448,7 +1426,7 @@ def aufgabe_2_3(szinti, pixel, pixel_quadrant):
     schiefe_grauwerthist(haufigkeit, grauwerte, avg_hist)
 
 
-def aufgabe_2_4(szinti, pixel, pixel_quadrant):
+def aufgabe_2_4(szinti):
     """ Berechnet den mittleren Informationsgehalt pro Pixel fuer das Bild aus
         Aufgabe 1.1.
     """
@@ -1463,7 +1441,7 @@ def aufgabe_2_4(szinti, pixel, pixel_quadrant):
           f'''{np.round(info, 3)} Bit/Pixel.''')
 
 
-def aufgabe_2_5(szinti, pixel, pixel_quadrant):
+def aufgabe_2_5(szinti):
     """ Erstellt die Bitebenen aller Bilder aus Aufgabe 1.1 und berechnet fuer
         jede Ebene den mittleren Informationsgehalt je Pixel.
     """
@@ -1476,9 +1454,9 @@ def aufgabe_2_5(szinti, pixel, pixel_quadrant):
     plt.show()
     # Berechnung mittlerer Informationsgehalt pro Pixel
     infogehalt_einzelne_bitebenen(ebene, "Aufgabe 1.1")
-    
 
-def aufgabe_2_6(szinti, pixel, pixel_quadrant):
+
+def aufgabe_2_6(szinti):
     """ Berechnet aus Aufgabe 1.1 ein Differenzbild. Von diesem Differenzbild
         wird ein Histogramm erzeugt sowie dessen mittlerer Informationsgehalt
         ermittelt und dem Originalbild vergleichend gegenuebergestellt.
@@ -1505,9 +1483,9 @@ def aufgabe_2_6(szinti, pixel, pixel_quadrant):
     vgl_infogehalt_differenz('Original', 'Differenz',
                              np.round(info_original, 3),
                              np.round(info_differenz, 3))
-    
 
-def aufgabe_2_7(szinti, pixel, pixel_quadrant):
+
+def aufgabe_2_7(szinti):
     """ Berechnet 2D Fouriertransformierte und das Leistungsspektrum des
         Bildes aus Aufgabe 1.1:
     """
@@ -1520,9 +1498,9 @@ def aufgabe_2_7(szinti, pixel, pixel_quadrant):
     plot_fourier(power, amplitude, phase, "des Bildes aus Aufgabe 1.1")
     plt.savefig("Aufgabe_2_7", dpi=300)
     plt.show()
-    
 
-def aufgabe_2_8(szinti, pixel, pixel_quadrant):
+
+def aufgabe_2_8(szinti, pixel_quadrant):
     """ Dreht das Bild aus Aufgabe 1.1 um 30° im positiven Drehsinne,
         berechnet die Fouriertransformierte und vergleicht das Ergebnis mit
         dem aus Aufgabe 2.7.
@@ -1545,7 +1523,7 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
     # Plot gedrehtes Originalbild Ortsraum
     ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
     plt.savefig("Aufgabe_2_8_original", dpi=300)
-    
+
     # Fouriertransformation: Erstellung Leistungsspektrum
     _, power, _, _ = calculate_fourier(szinti)
     # Erstellung gedrehtes Leistungsspektrum
@@ -1564,9 +1542,9 @@ def aufgabe_2_8(szinti, pixel, pixel_quadrant):
                extent=[-0.5, 0.5, -0.5, 0.5])
     plt.savefig("Aufgabe_2_8_power", dpi=300)
     plt.show()
-          
-          
-def aufgabe_2_9(szinti, pixel, pixel_quadrant):
+
+
+def aufgabe_2_9(szinti, pixel_quadrant):
     """ Anwendung eines Tiefpassfilters mit einer oberen Grenzfrequenz von
         |ν_lim| = 0.25 ∙ ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
@@ -1592,9 +1570,9 @@ def aufgabe_2_9(szinti, pixel, pixel_quadrant):
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.savefig("Aufgabe_2_9", dpi=300)
     plt.show()
-        
-    
-def aufgabe_2_10(szinti, pixel, pixel_quadrant):
+
+
+def aufgabe_2_10(szinti, pixel_quadrant):
     """ Anwendung eines Bandpassfilters mit einem erlaubten Frequenzbereich von
         3/8 ∙ ν_Nyquist < |ν| < 5/8 ∙ ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
@@ -1620,9 +1598,9 @@ def aufgabe_2_10(szinti, pixel, pixel_quadrant):
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.savefig("Aufgabe_2_10", dpi=300)
     plt.show()
-        
-# TODO: ist das richtig? hochpassfkt loeschen und diagramme besser
-def aufgabe_2_11(szinti, pixel, pixel_quadrant):
+
+
+def aufgabe_2_11(szinti, pixel_quadrant):
     """ Anwendung eines Bandpassfilters mit einem erlaubten Frequenzbereich
         von 3/4 ∙ ν_Nyquist < |ν| < ν_Nyquist auf das Bild aus Aufgabe 1.1.
     """
@@ -1648,7 +1626,7 @@ def aufgabe_2_11(szinti, pixel, pixel_quadrant):
     ax2.imshow(szinti_gefiltert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.savefig("Aufgabe_2_11", dpi=300)
     plt.show()
-    
+
 
 def aufgabe_3_1():
     """ Programmiert einen linearen Graukeil (mit 256 Grauwerten) und wendet
@@ -1669,9 +1647,9 @@ def aufgabe_3_1():
     plot_graukeile_transform(graukeile)
     plt.savefig("Aufgabe_3_1", dpi=300)
     plt.show()
-    
 
-def aufgabe_3_2(szinti, pixel, pixel_quadrant):
+
+def aufgabe_3_2(szinti, pixel_quadrant):
     """ Fuehrt nacheinander zunaechst eine Rotation um 90° (im positiven
         Drehsinne) und anschließend eine Scherung auf das Bild aus
         Aufgabe 1.1 durch.
@@ -1696,13 +1674,13 @@ def aufgabe_3_2(szinti, pixel, pixel_quadrant):
                                      r'$x/mm$', r'$y/mm$')
     # Plot Originalbild
     ax1.imshow(szinti, cmap='gray', extent=[-128, 128, -128, 128])
-    
+
     ax2.imshow(szinti_transform, cmap='gray', extent=[-128, 128, -128, 128])
     plt.savefig("Aufgabe_3_2", dpi=300)
     plt.show()
-    
 
-def aufgabe_3_3(szinti, pixel, pixel_quadrant):
+
+def aufgabe_3_3(szinti, pixel_quadrant):
     """ Anwendung eines 3x3- Mittelwert-, 3x3- Median- und einem
         3x3-Bionomialfilter am Bild aus Aufgabe 1.1.
     """
@@ -1724,13 +1702,13 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     grauprofil_szinti = extraktion_aus_array(szinti, pixel_quadrant + 60)
     # fuer angewendeten 3x3-Mittelwertsfilter
     grauprofil_avg = extraktion_aus_array(szinti_filter_avg,
-                                             pixel_quadrant + 60)
+                                          pixel_quadrant + 60)
     # fuer angewendeten 3x3-Medianfilter
     grauprofil_med = extraktion_aus_array(szinti_filter_med,
-                                             pixel_quadrant + 60)
+                                          pixel_quadrant + 60)
     # fuer angewendeten 3x3-Binomialfilter
     grauprofil_bin = extraktion_aus_array(szinti_filter_bin,
-                                             pixel_quadrant + 60)
+                                          pixel_quadrant + 60)
     # einzelne Subplots erstellen:
     axs = plot_vorbereitung_8sp('Vergleich verschiedener Glaettungsverfahren',
                                 ['Originalbild aus Aufgabe 1.1',
@@ -1746,7 +1724,7 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
               grauprofil_med, grauprofil_bin]
     # Plot der (verschieden) gefilterten Bilder (aus Aufgabe 1.1)
     for i in range(4):
-        axs[i].imshow(bilder[i], cmap='gray', extent=[-128, 128, -128, 128]) 
+        axs[i].imshow(bilder[i], cmap='gray', extent=[-128, 128, -128, 128])
     # Plot der Grauwertprofile (entlang y = 60) fuer die entsprechenden
     # Filterungen
     for i in range(4, 8):
@@ -1765,14 +1743,14 @@ def aufgabe_3_3(szinti, pixel, pixel_quadrant):
     filterart = ["Originalbild", "Mittelwertfilter", "Medianfilter",
                  "Binomialfilter"]
     for i in range(4, 8):
-        plt.plot((np.arange(-pixel_quadrant, pixel_quadrant)), bilder[i], 
+        plt.plot((np.arange(-pixel_quadrant, pixel_quadrant)), bilder[i],
                  label=filterart[4-i], linewidth=0.5)
     plt.legend(loc='upper right', frameon=True, fontsize=8)
     plt.savefig("Aufgabe_3_3_Grauwertprofile", dpi=300)
     plt.show()
 
 
-def aufgabe_3_4(szinti, pixel, pixel_quadrant):
+def aufgabe_3_4(szinti):
     """ Anwendung des Sobel- und Robertsfilters auf das Bild aus Aufgabe 1.1.
     """
     print("")
@@ -1793,9 +1771,9 @@ def aufgabe_3_4(szinti, pixel, pixel_quadrant):
     ax2.imshow(szinti_robert, cmap='gray', extent=[-128, 128, -128, 128])
     plt.savefig("Aufgabe_3_4", dpi=300)
     plt.show()
-    
-    
-def aufgabe_3_5(szinti, pixel, pixel_quadrant):
+
+
+def aufgabe_3_5(szinti):
     """ Anwendung des Laplace-Filters (mit einer 8er Nachbarschaft) auf das
         Bild aus Aufgabe 1.1.
     """
@@ -1816,7 +1794,7 @@ def aufgabe_3_5(szinti, pixel, pixel_quadrant):
     plt.show()
 
 
-def aufgabe_3_6(szinti, pixel, pixel_quadrant):
+def aufgabe_3_6(szinti):
     """ Separierung der Flaechenquelle D im Bild aus Aufgabe 1.1 (mittels
         Schwellwertverfahren).
     """
@@ -1835,7 +1813,7 @@ def aufgabe_3_6(szinti, pixel, pixel_quadrant):
     szinti_bearbeitet = use_schwellwert(szinti_bearbeitet, 50, 100)
     # Darstellung der separierten Flaechenquelle D (Dreieck)
     plot('Separierung der Flaechenquelle D', r'$x/mm$', r'$y/mm$',
-         szinti_bearbeitet, aufgabe_3_6=True)
+         szinti_bearbeitet, aufgabe3_6=True)
     plt.savefig("Aufgabe_3_6", dpi=300)
     plt.show()
 
@@ -1860,7 +1838,7 @@ def aufgabe_3_7(szinti, pixel, pixel_quadrant):
     hough_trafo(koord_x, koord_y)
     plt.savefig("Aufgabe_3_7", dpi=300)
     plt.show()
-    
+
 
 def aufgabe_3_8(szinti, pixel, pixel_quadrant):
     """ Berechnung des geometrischen und den Massenschwerpunkt fuer ein Bild,
@@ -1876,13 +1854,13 @@ def aufgabe_3_8(szinti, pixel, pixel_quadrant):
     schwerpkt_geo = calc_schwerpkt(szinti, calc_geometric=True)
     # Ausgabe des geometrischen Schwerpunktes
     print(f'''Der geometrische Schwerpunkt betraegt ''' +
-          f'''(x, y) = ({schwerpkt_geo[0]} mm, {schwerpkt_geo[1]} mm).''') 
+          f'''(x, y) = ({schwerpkt_geo[0]} mm, {schwerpkt_geo[1]} mm).''')
     # Einzeichnen des geometrischen Schwerpunktes
     plot_schnittpkt("geometrischer Schwerpunkt", r'$x/mm$', r'$y/mm$',
-                szinti, schwerpkt_geo)
+                    szinti, schwerpkt_geo)
     plt.savefig("Aufgabe_3_8_geometric", dpi=300)
     plt.show()
-    
+
     # Berechnung vom Massenschwerpunkt (in x- und y-Richtung)
     schwerpkt_mass = calc_schwerpkt(szinti)
     # Ausgabe des Massenschwerpunktes
@@ -1890,12 +1868,12 @@ def aufgabe_3_8(szinti, pixel, pixel_quadrant):
           f'''(x, y) = ({schwerpkt_mass[0]} mm, {schwerpkt_mass[1]} mm).''')
     # Einzeichnen des Massenschwerpunktes
     plot_schnittpkt("Massenschwerpunkt", r'$x/mm$', r'$y/mm$',
-                szinti, schwerpkt_mass)
+                    szinti, schwerpkt_mass)
     plt.savefig("Aufgabe_3_8_mass", dpi=300)
     plt.show()
-    
-    
-def aufgabe_3_9(szinti, pixel, pixel_quadrant):
+
+
+def aufgabe_3_9(szinti, pixel_quadrant):
     """ Extraktion von Flaechenquelle B aus Szintigramm Aufgabe 1.1,
         Bestimmung der Grauwertuebergangsmatrix C(δ=(1,0)), C(δ=(0,1)) und
         Interpretation.
@@ -1903,7 +1881,7 @@ def aufgabe_3_9(szinti, pixel, pixel_quadrant):
     print("")
     print("Aufgabe 3.9:")
     print("")
-    szinti = szinti_vorbereitung_3_9(szinti, pixel, pixel_quadrant)
+    szinti = szinti_vorbereitung_3_9(szinti, pixel_quadrant)
     # Erzeugen der Uebergangsmatrizen:
     # mit Vektor C(δ=(1,0))
     make_uebergangsmatrix(szinti)
@@ -1922,60 +1900,53 @@ def main():
     t1 = time.time()
     # Szintigramm (beschrieben in Vorlesung zu Modul MF-MRS_14 Digitale
     # Bildverarbeitung, siehe Folie 17)  erstellen
-    # TODO: ok so?
     szinti, pixel, pixel_quadrant = make_szinti()
-#    # Aufruf Aufgabe 1.1
-#    aufgabe_1_1(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.1
-#    aufgabe_2_1(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.2
-#    aufgabe_2_2(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.3
-#    aufgabe_2_3(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.4
-#    aufgabe_2_4(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.5
-#    aufgabe_2_5(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.6
-#    aufgabe_2_6(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.7
-#    aufgabe_2_7(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.8
-#    aufgabe_2_8(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.9
-#    aufgabe_2_9(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.10
-#    aufgabe_2_10(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 2.11
-#    aufgabe_2_11(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.1
-#    aufgabe_3_1()
-#    # Aufruf Aufgabe 3.2
-#    aufgabe_3_2(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.3
-#    aufgabe_3_3(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.4
-#    aufgabe_3_4(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.5
-#    aufgabe_3_5(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.6
-#    aufgabe_3_6(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.7
-#    aufgabe_3_7(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 1.1
+    aufgabe_1_1(szinti)
+    # Aufruf Aufgabe 2.1
+    aufgabe_2_1(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 2.2
+    aufgabe_2_2(szinti)
+    # Aufruf Aufgabe 2.3
+    aufgabe_2_3(szinti, pixel)
+    # Aufruf Aufgabe 2.4
+    aufgabe_2_4(szinti)
+    # Aufruf Aufgabe 2.5
+    aufgabe_2_5(szinti)
+    # Aufruf Aufgabe 2.6
+    aufgabe_2_6(szinti)
+    # Aufruf Aufgabe 2.7
+    aufgabe_2_7(szinti)
+    # Aufruf Aufgabe 2.8
+    aufgabe_2_8(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 2.9
+    aufgabe_2_9(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 2.10
+    aufgabe_2_10(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 2.11
+    aufgabe_2_11(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 3.1
+    aufgabe_3_1()
+    # Aufruf Aufgabe 3.2
+    aufgabe_3_2(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 3.3
+    aufgabe_3_3(szinti, pixel_quadrant)
+    # Aufruf Aufgabe 3.4
+    aufgabe_3_4(szinti)
+    # Aufruf Aufgabe 3.5
+    aufgabe_3_5(szinti)
+    # Aufruf Aufgabe 3.6
+    aufgabe_3_6(szinti)
+    # Aufruf Aufgabe 3.7
+    aufgabe_3_7(szinti, pixel, pixel_quadrant)
     # Aufruf Aufgabe 3.8
     aufgabe_3_8(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.9
-#    aufgabe_3_9(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.9
+    aufgabe_3_9(szinti, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
-#    # Zeit messen:
-#    # fuer Zeitmessung:
-#    t1 = time.time()
-#    # fuer Zeitmessung:
-#    t2 = time.time()
     # Ausgabe Zeitanspruch des Programms
-    print("Die Zeit dieses Programmes lautet:", t2 - t1, "s")
-#    input("Bitte Enter druecken zum Beenden!")
+    print("Die Zeit dieses Programmes lautet:", np.round(t2 - t1, 3), "s")
 
 
 if __name__ == "__main__":
