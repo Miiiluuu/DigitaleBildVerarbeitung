@@ -1878,8 +1878,7 @@ def aufgabe_3_8(szinti, pixel, pixel_quadrant):
     print(f'''Der geometrische Schwerpunkt betraegt ''' +
           f'''(x, y) = ({schwerpkt_geo[0]} mm, {schwerpkt_geo[1]} mm).''') 
     # Einzeichnen des geometrischen Schwerpunktes
-    plot_schnittpkt("geometrischer Schwerpunkt \n"
-                "- innerhalb Bild aus Aufgabe 1.1 -", r'$x/mm$', r'$y/mm$',
+    plot_schnittpkt("geometrischer Schwerpunkt", r'$x/mm$', r'$y/mm$',
                 szinti, schwerpkt_geo)
     plt.savefig("Aufgabe_3_8_geometric", dpi=300)
     plt.show()
@@ -1890,8 +1889,7 @@ def aufgabe_3_8(szinti, pixel, pixel_quadrant):
     print(f'''Der Massenschwerpunkt betraegt ''' +
           f'''(x, y) = ({schwerpkt_mass[0]} mm, {schwerpkt_mass[1]} mm).''')
     # Einzeichnen des Massenschwerpunktes
-    plot_schnittpkt("Massenschwerpunkt \n"
-                "- innerhalb Bild aus Aufgabe 1.1 -", r'$x/mm$', r'$y/mm$',
+    plot_schnittpkt("Massenschwerpunkt", r'$x/mm$', r'$y/mm$',
                 szinti, schwerpkt_mass)
     plt.savefig("Aufgabe_3_8_mass", dpi=300)
     plt.show()
@@ -1964,10 +1962,10 @@ def main():
 #    aufgabe_3_6(szinti, pixel, pixel_quadrant)
 #    # Aufruf Aufgabe 3.7
 #    aufgabe_3_7(szinti, pixel, pixel_quadrant)
-#    # Aufruf Aufgabe 3.8
-#    aufgabe_3_8(szinti, pixel, pixel_quadrant)
-    # Aufruf Aufgabe 3.9
-    aufgabe_3_9(szinti, pixel, pixel_quadrant)
+    # Aufruf Aufgabe 3.8
+    aufgabe_3_8(szinti, pixel, pixel_quadrant)
+#    # Aufruf Aufgabe 3.9
+#    aufgabe_3_9(szinti, pixel, pixel_quadrant)
     # fuer Zeitmessung:
     t2 = time.time()
 #    # Zeit messen:
